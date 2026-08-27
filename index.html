@@ -1,0 +1,2394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="icon" type="image/png" href="./logo.png" />
+<link rel="apple-touch-icon" href="./logo.png" />
+<title>MAISON NOIR — Exclusive Clothing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500;600&family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    darkMode: 'class',
+    theme: {
+      extend: {
+        colors: {
+          ink: '#14120F',
+          charcoal: '#211E19',
+          char2: '#2B2721',
+          cream: '#F4EDE2',
+          parchment: '#EBDFCB',
+          offwhite: '#FBF8F3',
+          gold: '#B08C4F',
+          goldlight: '#D8BD8A',
+          golddim: '#8A6E3E',
+          stone: '#8A8072',
+        },
+        fontFamily: {
+          display: ['"Cormorant Garamond"', 'serif'],
+          body: ['"Jost"', 'sans-serif'],
+          arabic: ['"Tajawal"', 'sans-serif'],
+        },
+        letterSpacing: { widest2: '0.35em' },
+      }
+    }
+  }
+</script>
+<script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Jost', sans-serif; background: #F4EDE2; transition: background .4s ease, color .4s ease; margin: 0; }
+  [dir="rtl"] body { font-family: 'Tajawal', 'Jost', sans-serif; }
+  .font-display { font-family: 'Cormorant Garamond', serif; }
+  [dir="rtl"] .font-display { font-family: 'Tajawal', serif; }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #B08C4F55; border-radius: 4px; }
+
+  .thread { position: relative; display: inline-block; }
+  .thread::after {
+    content: ''; position: absolute; left: 0; bottom: -6px; height: 1px; width: 0;
+    background: linear-gradient(90deg, #B08C4F, transparent);
+    transition: width 0.6s cubic-bezier(.4,0,.2,1);
+  }
+  [dir="rtl"] .thread::after { left: auto; right: 0; background: linear-gradient(270deg, #B08C4F, transparent); }
+  .thread:hover::after, .thread.active::after { width: 100%; }
+
+  .reveal { opacity: 0; transform: translateY(24px); transition: opacity .8s ease, transform .8s ease; }
+  .reveal.show { opacity: 1; transform: translateY(0); }
+
+  .tilt-card { transition: transform .15s ease-out, box-shadow .3s ease; will-change: transform; transform-style: preserve-3d; }
+
+  .gold-btn {
+    background: linear-gradient(180deg, #C9A566, #A17C42);
+    color: #14120F;
+    transition: all .35s ease;
+    letter-spacing: .18em;
+    font-weight: 500;
+  }
+  .gold-btn:hover { background: linear-gradient(180deg, #D8BD8A, #B08C4F); box-shadow: 0 8px 24px -8px rgba(176,140,79,0.6); transform: translateY(-1px); }
+
+  .ghost-btn { border: 1px solid #B08C4F88; color: inherit; transition: all .35s ease; }
+  .ghost-btn:hover { background: #B08C4F; color: #14120F; border-color: #B08C4F; }
+
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; height: 14px; width: 14px; border-radius: 50%;
+    background: #B08C4F; cursor: pointer; margin-top: -6px;
+    box-shadow: 0 0 0 4px #F4EDE2, 0 0 0 5px #B08C4F55;
+  }
+  input[type=range] { -webkit-appearance: none; height: 2px; background: #D8C7A8; border-radius: 2px; }
+
+  .drawer { transition: transform .5s cubic-bezier(.4,0,.2,1); }
+  .fade-scale { animation: fadeScale .4s cubic-bezier(.2,.8,.2,1); }
+  @keyframes fadeScale { from { opacity:0; transform: scale(.97); } to { opacity:1; transform: scale(1); } }
+
+  .noise-overlay {
+    background-image: repeating-linear-gradient(0deg, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 1px, transparent 1px, transparent 3px);
+  }
+
+  .marquee-track { animation: marquee 28s linear infinite; }
+  @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  [dir="rtl"] .marquee-track { animation: marquee-rtl 28s linear infinite; }
+  @keyframes marquee-rtl { from { transform: translateX(-50%); } to { transform: translateX(0); } }
+
+  .snap-x { scroll-snap-type: x mandatory; }
+  .snap-c { scroll-snap-align: center; }
+
+  .float-slow { animation: floatY 6s ease-in-out infinite; }
+  @keyframes floatY { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-14px); } }
+
+  ::selection { background: #B08C4F; color: #14120F; }
+</style>
+</head>
+<body class="bg-cream text-ink dark:bg-ink dark:text-offwhite">
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState, useEffect, useRef, useMemo, useCallback } = React;
+
+/* ---------------------------------------------------------
+   I18N
+--------------------------------------------------------- */
+const I18N = {
+  en: {
+    dir: 'ltr',
+    nav_women: 'Women', nav_men: 'Men', nav_acc: 'Accessories', nav_story: 'Story', nav_owner: 'Owner',
+    hero_default_eyebrow: 'AUTUMN — WINTER COLLECTION',
+    hero_default_title: 'Quiet Luxury,\nLoudly Made Well',
+    hero_default_sub: 'Garments cut for permanence, not seasons. Every piece made in small runs and finished by hand.',
+    hero_default_cta: 'Explore The Collection',
+    scroll: 'Scroll',
+    collections_eyebrow: 'Featured Collections', collections_title: 'Curated by Season',
+    trending_eyebrow: 'Trending Now', trending_title: 'The Full Collection',
+    filter_category: 'Category', filter_size: 'Size', filter_color: 'Color', filter_price: 'Max Price', filter_sort: 'Sort By',
+    sort_newest: 'Newest', sort_desc: 'Price: High to Low', sort_asc: 'Price: Low to High',
+    no_match: 'No pieces match these filters yet.',
+    low_stock: 'Low Stock', quick_view: 'Quick View', in_stock: 'in stock', out_stock: 'Out of stock',
+    color_label: 'Color', size_label: 'Size', qty_label: 'Qty', add_to_bag: 'Add to Bag',
+    desc_details: 'Description & Details',
+    story_eyebrow: 'Since 1998',
+    story_title_1: 'We measure success in decades of wear,', story_title_2: 'not seasons of sales.',
+    story_body: 'Every garment is produced in a run of fewer than 200 pieces, cut from mills we\'ve worked with for over twenty years, and finished entirely by hand. We would rather make one hundred coats extremely well than ten thousand adequately.',
+    stat_years: 'Years in atelier', stat_pieces: 'Pieces per run', stat_countries: 'Countries of production', stat_hand: 'Hand-finished',
+    footer_tag: 'Exclusive ready-to-wear and accessories, made in small runs, worn for a lifetime.',
+    footer_shop: 'Shop', footer_house: 'House', footer_care: 'Client Care',
+    footer_women: 'Women', footer_men: 'Men', footer_acc: 'Accessories',
+    footer_our_story: 'Our Story', footer_ateliers: 'Ateliers', footer_sustain: 'Sustainability',
+    footer_shipping: 'Shipping', footer_returns: 'Returns', footer_contact: 'Contact',
+    footer_rights: 'All rights reserved.', footer_owner: 'Owner Access',
+    bag_title: 'Your Bag', bag_empty: 'Your bag is empty. Time to fix that.',
+    promo_placeholder: 'Promo code (try LUXE10)', apply: 'Apply',
+    subtotal: 'Subtotal', discount: 'Discount', total: 'Total', checkout_btn: 'Proceed to Checkout',
+    step_shipping: 'Shipping Details', full_name: 'Full Name', email: 'Email', address: 'Address', city: 'City', country: 'Country',
+    continue_payment: 'Continue to Payment', step_payment: 'Payment', card_number: 'Card Number', exp: 'MM/YY', cvv: 'CVV',
+    payment_note: 'This is a prototype — no real payment is processed.', back: 'Back', review_order: 'Review Order',
+    step_review: 'Review & Place Order', shipping_to: 'Shipping to', place_order: 'Place Order',
+    order_confirmed: 'Order Confirmed', order_thanks: 'Thank you', order_sent: 'A confirmation has been sent to',
+    continue_shopping: 'Continue Shopping',
+    chat_brand: 'Maison Noir', chat_care: 'Client Care', chat_intro: 'Introduce yourself and we\'ll connect you with our team.',
+    chat_name_ph: 'Your name', chat_start: 'Start Chat', chat_empty: 'Say hello — our team usually replies within minutes.',
+    chat_type_ph: 'Type a message…',
+    owner_access: 'Owner Access', owner_pass_ph: 'Password', owner_wrong: 'Incorrect password. Try "admin123" for this prototype.',
+    owner_enter: 'Enter Dashboard', owner_back: '← Back to store',
+    admin_overview: 'Overview', admin_products: 'Products', admin_orders: 'Orders', admin_theme: 'Theme Settings',
+    admin_chat: 'Chat Center', admin_webhooks: 'Webhook Log', admin_exit: '← Exit to Storefront',
+    admin_total_orders: 'Total Orders', admin_revenue: 'Revenue', admin_products_live: 'Products Live', admin_conversations: 'Conversations',
+    admin_recent_orders: 'Recent Orders', admin_order: 'Order', admin_customer: 'Customer', admin_total: 'Total', admin_status: 'Status',
+    admin_no_orders: 'No orders yet — place one from the storefront to see it here.',
+    admin_add_product: '+ Add Product', admin_product: 'Product', admin_category: 'Category', admin_price: 'Price', admin_stock: 'Stock',
+    admin_edit: 'Edit', admin_delete: 'Delete', admin_save_product: 'Save Product', admin_add_title: 'Add Product', admin_edit_title: 'Edit Product',
+    admin_cancel: 'Cancel', ph_name: 'Name', ph_desc: 'Description', ph_price: 'Price (USD)', ph_stock: 'Stock',
+    ph_sizes: 'Sizes (comma separated)', ph_colors: 'Colors (comma separated)', ph_img: 'Pinterest / Image URL (optional)',
+    admin_items: 'Items', admin_no_orders_placed: 'No orders placed yet.',
+    theme_title: 'Theme & Storefront Settings', theme_eyebrow: 'Hero Eyebrow', theme_title_field: 'Hero Title (use \\n for line break)',
+    theme_sub: 'Hero Subtitle', theme_cta: 'Hero CTA Text', theme_bg: 'Hero Background', theme_announce: 'Announcement Bar',
+    theme_promo: 'Promotional Banner (marquee)', theme_webhook: 'Webhook / AI Agent Endpoint URL (optional)',
+    theme_webhook_ph: 'https://your-n8n-instance.com/webhook/orders',
+    theme_webhook_note: 'When set, new orders and chat messages POST a JSON event here in real time — ready to plug into n8n, Zapier, or a custom AI agent.',
+    theme_save: 'Save Changes',
+    chatcenter_none: 'No conversations yet.', chatcenter_select: 'Select a conversation', chatcenter_reply_ph: 'Reply to customer…', chatcenter_send: 'Send',
+    webhook_title: 'Webhook / Event Log',
+    webhook_desc: 'Every order and chat message emits a structured event here. Point the Webhook URL in Theme Settings at an n8n, Zapier, or custom AI agent endpoint to receive these as real-time POST requests.',
+    webhook_armed: 'Live endpoint armed:', webhook_none: 'No endpoint configured — events are logged locally only.',
+    webhook_empty: 'No events yet — place an order or send a chat message.', webhook_delivered: 'Delivered to endpoint', webhook_failed: 'Delivery failed (check endpoint URL / CORS)',
+  },
+  ar: {
+    dir: 'rtl',
+    nav_women: 'نسائي', nav_men: 'رجالي', nav_acc: 'إكسسوارات', nav_story: 'قصتنا', nav_owner: 'المالك',
+    hero_default_eyebrow: 'مجموعة الخريف — الشتاء',
+    hero_default_title: 'فخامة هادئة،\nصنعت بإتقان صاخب',
+    hero_default_sub: 'قطع مصممة لتدوم، لا لموسم واحد. كل قطعة تُصنع بكميات محدودة وتُنهى يدويًا بعناية فائقة.',
+    hero_default_cta: 'اكتشف المجموعة',
+    scroll: 'مرر للأسفل',
+    collections_eyebrow: 'مجموعات مختارة', collections_title: 'منسقة حسب الموسم',
+    trending_eyebrow: 'الأكثر رواجًا', trending_title: 'المجموعة الكاملة',
+    filter_category: 'الفئة', filter_size: 'المقاس', filter_color: 'اللون', filter_price: 'الحد الأقصى للسعر', filter_sort: 'ترتيب حسب',
+    sort_newest: 'الأحدث', sort_desc: 'السعر: من الأعلى للأقل', sort_asc: 'السعر: من الأقل للأعلى',
+    no_match: 'لا توجد قطع مطابقة لهذه الفلاتر حاليًا.',
+    low_stock: 'كمية محدودة', quick_view: 'عرض سريع', in_stock: 'متوفر بالمخزون', out_stock: 'غير متوفر حاليًا',
+    color_label: 'اللون', size_label: 'المقاس', qty_label: 'الكمية', add_to_bag: 'أضف إلى الحقيبة',
+    desc_details: 'الوصف والتفاصيل',
+    story_eyebrow: 'منذ عام 1998',
+    story_title_1: 'نقيس نجاحنا بعقود من الاستخدام،', story_title_2: 'لا بمواسم من المبيعات.',
+    story_body: 'كل قطعة تُنتج بكمية تقل عن 200 قطعة، تُقص من مصانع نسيج نتعامل معها منذ أكثر من عشرين عامًا، وتُنهى بالكامل يدويًا. نفضّل أن نصنع مئة معطف بإتقان تام على أن نصنع عشرة آلاف بجودة عادية.',
+    stat_years: 'سنة في المشغل', stat_pieces: 'قطعة لكل إصدار', stat_countries: 'دول للتصنيع', stat_hand: 'إنهاء يدوي بالكامل',
+    footer_tag: 'ملابس وإكسسوارات حصرية، تُصنع بكميات محدودة، لتُلبس مدى الحياة.',
+    footer_shop: 'المتجر', footer_house: 'الدار', footer_care: 'خدمة العملاء',
+    footer_women: 'نسائي', footer_men: 'رجالي', footer_acc: 'إكسسوارات',
+    footer_our_story: 'قصتنا', footer_ateliers: 'المشاغل', footer_sustain: 'الاستدامة',
+    footer_shipping: 'الشحن', footer_returns: 'الإرجاع', footer_contact: 'تواصل معنا',
+    footer_rights: 'جميع الحقوق محفوظة.', footer_owner: 'دخول المالك',
+    bag_title: 'حقيبتك', bag_empty: 'حقيبتك فارغة — حان وقت تغيير ذلك.',
+    promo_placeholder: 'كود الخصم (جرّب LUXE10)', apply: 'تطبيق',
+    subtotal: 'المجموع الفرعي', discount: 'الخصم', total: 'الإجمالي', checkout_btn: 'إتمام الشراء',
+    step_shipping: 'تفاصيل الشحن', full_name: 'الاسم الكامل', email: 'البريد الإلكتروني', address: 'العنوان', city: 'المدينة', country: 'الدولة',
+    continue_payment: 'المتابعة إلى الدفع', step_payment: 'الدفع', card_number: 'رقم البطاقة', exp: 'شهر/سنة', cvv: 'رمز الأمان',
+    payment_note: 'هذا نموذج تجريبي — لا تتم أي عملية دفع فعلية.', back: 'رجوع', review_order: 'مراجعة الطلب',
+    step_review: 'مراجعة الطلب وتأكيده', shipping_to: 'الشحن إلى', place_order: 'تأكيد الطلب',
+    order_confirmed: 'تم تأكيد الطلب', order_thanks: 'شكرًا لك', order_sent: 'تم إرسال تأكيد إلى',
+    continue_shopping: 'مواصلة التسوق',
+    chat_brand: 'ميزون نوار', chat_care: 'خدمة العملاء', chat_intro: 'عرّفنا بنفسك وسنقوم بتوصيلك بفريقنا.',
+    chat_name_ph: 'اسمك', chat_start: 'ابدأ المحادثة', chat_empty: 'قل مرحبًا — فريقنا يرد عادة خلال دقائق.',
+    chat_type_ph: 'اكتب رسالة…',
+    owner_access: 'دخول المالك', owner_pass_ph: 'كلمة المرور', owner_wrong: 'كلمة المرور غير صحيحة. جرّب "admin123" لهذا النموذج.',
+    owner_enter: 'الدخول للوحة التحكم', owner_back: '← العودة إلى المتجر',
+    admin_overview: 'نظرة عامة', admin_products: 'المنتجات', admin_orders: 'الطلبات', admin_theme: 'إعدادات المظهر',
+    admin_chat: 'مركز المحادثات', admin_webhooks: 'سجل الأحداث', admin_exit: '← الخروج إلى المتجر',
+    admin_total_orders: 'إجمالي الطلبات', admin_revenue: 'الإيرادات', admin_products_live: 'المنتجات المتاحة', admin_conversations: 'المحادثات',
+    admin_recent_orders: 'أحدث الطلبات', admin_order: 'الطلب', admin_customer: 'العميل', admin_total: 'الإجمالي', admin_status: 'الحالة',
+    admin_no_orders: 'لا توجد طلبات بعد — قم بإجراء طلب من المتجر لتراه هنا.',
+    admin_add_product: '+ إضافة منتج', admin_product: 'المنتج', admin_category: 'الفئة', admin_price: 'السعر', admin_stock: 'المخزون',
+    admin_edit: 'تعديل', admin_delete: 'حذف', admin_save_product: 'حفظ المنتج', admin_add_title: 'إضافة منتج', admin_edit_title: 'تعديل المنتج',
+    admin_cancel: 'إلغاء', ph_name: 'الاسم', ph_desc: 'الوصف', ph_price: 'السعر (دولار)', ph_stock: 'المخزون',
+    ph_sizes: 'المقاسات (مفصولة بفاصلة)', ph_colors: 'الألوان (مفصولة بفاصلة)', ph_img: 'رابط الصورة من بنترست أو غيره (اختياري)',
+    admin_items: 'العناصر', admin_no_orders_placed: 'لم يتم تقديم أي طلبات بعد.',
+    theme_title: 'إعدادات المظهر والمتجر', theme_eyebrow: 'عنوان فرعي للرئيسية', theme_title_field: 'العنوان الرئيسي (استخدم \\n لسطر جديد)',
+    theme_sub: 'العنوان الفرعي', theme_cta: 'نص زر الدعوة للعمل', theme_bg: 'خلفية القسم الرئيسي', theme_announce: 'شريط الإعلانات',
+    theme_promo: 'شريط العروض الترويجية', theme_webhook: 'رابط الربط الآلي / وكيل الذكاء الاصطناعي (اختياري)',
+    theme_webhook_ph: 'https://your-n8n-instance.com/webhook/orders',
+    theme_webhook_note: 'عند تفعيله، سيتم إرسال الطلبات والمحادثات الجديدة كحدث JSON فوري لهذا الرابط — جاهز للربط مع n8n أو Zapier أو وكيل ذكاء اصطناعي مخصص.',
+    theme_save: 'حفظ التغييرات',
+    chatcenter_none: 'لا توجد محادثات بعد.', chatcenter_select: 'اختر محادثة', chatcenter_reply_ph: 'الرد على العميل…', chatcenter_send: 'إرسال',
+    webhook_title: 'سجل الأحداث والربط الآلي',
+    webhook_desc: 'كل طلب أو رسالة دردشة يُصدر حدثًا منظمًا هنا. وجّه رابط الربط الآلي في إعدادات المظهر نحو n8n أو Zapier أو وكيل ذكاء اصطناعي مخصص لاستقبالها فوريًا.',
+    webhook_armed: 'الرابط الفوري مفعّل:', webhook_none: 'لا يوجد رابط مُعد — يتم تسجيل الأحداث محليًا فقط.',
+    webhook_empty: 'لا توجد أحداث بعد — قم بإجراء طلب أو إرسال رسالة دردشة.', webhook_delivered: 'تم التسليم إلى الرابط', webhook_failed: 'فشل التسليم (تحقق من الرابط / CORS)',
+  }
+};
+
+/* ---------------------------------------------------------
+   DATA LAYER — localStorage-backed store
+--------------------------------------------------------- */
+const LS_KEYS = {
+  products: 'ln_products', orders: 'ln_orders', conversations: 'ln_conversations',
+  theme: 'ln_theme', cart: 'ln_cart', webhooks: 'ln_webhook_log', customerId: 'ln_customer_id',
+  lang: 'ln_lang', dark: 'ln_dark', collections: 'ln_collections', view: 'ln_view',
+};
+function loadLS(key, fallback) { try { const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : fallback; } catch (e) { return fallback; } }
+function saveLS(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) {} }
+
+const PALETTES = [
+  { name:'Onyx',  nameAr:'أونيكس', c1:'#3a352c', c2:'#211e19', c3:'#14120f' },
+  { name:'Bone',  nameAr:'عاجي',   c1:'#efe6d6', c2:'#d8c7a8', c3:'#b08c4f' },
+  { name:'Clay',  nameAr:'طيني',   c1:'#8a6e3e', c2:'#5c4a2a', c3:'#2b2721' },
+  { name:'Umber', nameAr:'بني غامق', c1:'#5a4632', c2:'#332a20', c3:'#14120f' },
+  { name:'Pearl', nameAr:'لؤلؤي',  c1:'#fbf8f3', c2:'#ebdfcb', c3:'#c9b28a' },
+  { name:'Slate', nameAr:'رمادي غامق', c1:'#4a4a48', c2:'#2b2b29', c3:'#14120f' },
+];
+
+const CATEGORY_AR = { Men:'رجالي', Women:'نسائي', Accessories:'إكسسوارات' };
+
+const SEED_COLLECTIONS = [
+  { id: 'c1', name: 'The Tailoring Edit', nameAr: 'مجموعة التفصيل', tag: 'Men', tagAr: 'رجالي', palette: 0, art: 'coat', img: 'https://i.pinimg.com/736x/3e/de/5b/3ede5b0c66a27f93db812a8a0d4fb14b.jpg' },
+  { id: 'c2', name: 'Evening Archive', nameAr: 'أرشيف السهرات', tag: 'Women', tagAr: 'نسائي', palette: 4, art: 'gown', img: 'https://i.pinimg.com/736x/e4/f0/de/e4f0de8e289f9c6df172010e5b40d521.jpg' },
+  { id: 'c3', name: 'Streetwear & Jackets', nameAr: 'تشكيلة المعاطف والستريت وير', tag: 'Men', tagAr: 'رجالي', palette: 3, art: 'coat', img: 'https://i.pinimg.com/736x/67/99/02/679902875041031216.jpg' },
+  { id: 'c4', name: 'Fine Jewelry & Art', nameAr: 'قطع ومجوهرات فنية', tag: 'Accessories', tagAr: 'إكسسوارات', palette: 1, art: 'cufflinks', img: 'https://i.pinimg.com/736x/f6/9f/bd/f69fbdd74940d2fd5a4b7bad1c1cc32b.jpg' }
+];
+
+const SEED_PRODUCTS = [
+  { id:'p1', art:'coat', img:'https://i.pinimg.com/736x/3e/de/5b/3ede5b0c66a27f93db812a8a0d4fb14b.jpg', name:'The Cashmere Overcoat', nameAr:'معطف الكشمير الفاخر', category:'Men', price:1280, stock:6,
+    sizes:['S','M','L','XL'], colors:['Onyx','Umber'], palette:0,
+    desc:'Double-faced cashmere, hand-finished horn buttons, and a silhouette cut for stillness. Inspired by classic Pinterest menswear aesthetics.',
+    descAr:'كشمير فاخر مزدوج الوجه، أزرار قرنية منتهية يدويًا، وقصة أنيقة مستوحاة من أحدث صيحات الموضة من بنترست.' },
+  { id:'p2', art:'gown', img:'https://i.pinimg.com/736x/e4/f0/de/e4f0de8e289f9c6df172010e5b40d521.jpg', name:'Silk Column Gown', nameAr:'فستان الحرير المنسدل', category:'Women', price:2150, stock:3,
+    sizes:['XS','S','M'], colors:['Pearl','Onyx'], palette:4,
+    desc:'A single seam runs the length of this gown, cut on the bias from mulberry silk charmeuse.',
+    descAr:'خيط واحد يمتد على طول الفستان، مقصوص بحرفية من حرير التوت الفاخر ليتحرك كالماء.' },
+  { id:'p3', art:'cufflinks', img:'https://i.pinimg.com/736x/f6/9f/bd/f69fbdd74940d2fd5a4b7bad1c1cc32b.jpg', name:'Brushed Gold Cufflinks', nameAr:'أزرار كم ذهبية مصقولة', category:'Accessories', price:340, stock:14,
+    sizes:['One Size'], colors:['Onyx'], palette:1,
+    desc:'Solid brass, brushed by hand, finished with a 24k gold wash that deepens with wear.',
+    descAr:'نحاس صلب مصقول يدويًا، بطلاء ذهب عيار 24 يزداد جمالًا مع الاستخدام.' },
+  { id:'p4', art:'trouser', img:'https://i.pinimg.com/736x/2c/df/0f/2cdf0f9a2e64627d35967bb3f42b3eb2.jpg', name:'Tailored Wool Trouser', nameAr:'بنطال صوف مفصّل', category:'Men', price:520, stock:9,
+    sizes:['30','32','34','36'], colors:['Slate','Umber'], palette:5,
+    desc:'A fuller break, a higher rise, and a wool so fine it holds a crease for a week.',
+    descAr:'قصة أوسع وخصر أعلى، وصوف فاخر يحافظ على كيّته لأسبوع كامل.' },
+  { id:'p5', art:'wrap', img:'https://i.pinimg.com/736x/5a/88/2c/5a882c730248a901844b248a27d2bb91.jpg', name:'Draped Cashmere Wrap', nameAr:'شال كشمير منسدل', category:'Women', price:640, stock:11,
+    sizes:['One Size'], colors:['Bone','Clay'], palette:2,
+    desc:'Six-ply cashmere, edge-frayed by hand in a small atelier outside Florence.',
+    descAr:'كشمير سداسي الطبقات، حوافه مهدبة يدويًا في مشغل صغير قرب فلورنسا.' },
+  { id:'p6', art:'tote', img:'https://i.pinimg.com/736x/32/fa/5c/32fa5c15eefb988f547c1b714b1ce001.jpg', name:'Structured Leather Tote', nameAr:'حقيبة جلدية مهيكلة', category:'Accessories', price:980, stock:5,
+    sizes:['One Size'], colors:['Umber'], palette:3,
+    desc:'Vegetable-tanned calfskin over a hand-welted frame, built to last a lifetime.',
+    descAr:'جلد عجل مدبوغ نباتيًا فوق هيكل مخيط يدويًا، مصنوع ليدوم مدى الحياة.' },
+  { id:'p7', art:'turtleneck', img:'https://i.pinimg.com/736x/70/4e/d8/704ed8a25cbb463d12d46e330594aefc.jpg', name:'Merino Turtleneck', nameAr:'كنزة مرينو ياقة عالية', category:'Men', price:310, stock:18,
+    sizes:['S','M','L','XL'], colors:['Onyx','Bone'], palette:0,
+    desc:'18.5-micron merino, fully fashioned with no side seams.',
+    descAr:'صوف مرينو فاخر بلا خياطة جانبية، مثالي للطبقات تحت البدلة.' },
+  { id:'p8', art:'skirt', img:'https://i.pinimg.com/736x/8f/3b/1a/8f3b1a8d05284fb1403e9185a210d32e.jpg', name:'Pleated Midi Skirt', nameAr:'تنورة ميدي مطوية', category:'Women', price:410, stock:7,
+    sizes:['XS','S','M','L'], colors:['Pearl','Slate'], palette:4,
+    desc:'Four hundred knife pleats, heat-set into technical wool.',
+    descAr:'أربعمائة طية دقيقة، مثبتة بالحرارة على صوف تقني يحافظ على شكله.' },
+];
+
+const SEED_THEME = {
+  heroEyebrow: null, heroTitle: null, heroSubtitle: null, heroCta: null,
+  heroBg: 3, heroImage: './hero-bg.jpg', heroVideo: './hero-video.mp4', announcement: null, promoBanner: null, webhookUrl: '',
+  supabaseUrl: 'https://kosffrzmxhlobsoxvezr.supabase.co',
+  supabaseKey: 'sb_publishable_wNZVp8gQgSh6bM71nIpYJw_oyl1DFuk',
+  cloudSyncUrl: 'https://api.myjson.online/v1/records/maison_noir_db',
+  // Brand Story Stats
+  stat1Num: '27', stat1Label: 'Years in Atelier', stat1LabelAr: 'سنة في المشغل',
+  stat2Num: '<200', stat2Label: 'Pieces per edition', stat2LabelAr: 'قطعة لكل إصدار',
+  stat3Num: '4', stat3Label: 'Countries of origin', stat3LabelAr: 'دول للتصنيع',
+  stat4Num: '100%', stat4Label: 'Hand-finished', stat4LabelAr: 'إنهاء يدوي بالكامل',
+  // Footer Information & Policy Pages
+  shippingInfo: 'Worldwide complimentary express shipping on all orders over $500. Standard delivery timeline is 3–5 business days with real-time tracking.',
+  shippingInfoAr: 'نوفر خدمة الشحن السريع المجاني لكافة أنحاء العالم لجميع الطلبات التي تتجاوز 500 دولار. مدة التوصيل القياسية من 3 إلى 5 أيام عمل مع تتبع فوري للطلب.',
+  returnsInfo: 'We offer a 30-day complimentary return or exchange window for all unworn items with original security tags attached.',
+  returnsInfoAr: 'نقدم سياسة إرجاع أو استبدال مجانية لمدة 30 يومًا لجميع القطع غير المستعملة مع احتفاظها ببطاقات الأمان والملصقات الأصلية.',
+  contactInfo: 'Client Care Atelier:\nEmail: concierge@maisonnoir.luxury\nWhatsApp: +966 50 123 4567\nAtelier Hours: Sunday – Thursday | 9:00 AM – 9:00 PM',
+  contactInfoAr: 'فريق خدمة العملاء والمشاغل:\nالبريد الإلكتروني: concierge@maisonnoir.luxury\nواتساب المباشر: 4567 123 50 966+\nأوقات العمل: الأحد – الخميس | 9:00 صباحًا – 9:00 مساءً',
+  ourStoryInfo: 'Maison Noir was established with a singular devotion: creating garments cut for permanence rather than seasons. Every piece is crafted in small, numbered runs by master artisans.',
+  ourStoryInfoAr: 'تأسست دار ميزون نوار بهدف واحد وحصري: ابتكار أزياء تصمم لتدوم مدى الحياة بعيداً عن الموضة العابرة. كل قطعة تخرج من مشاغلنا تُصنع بكميات محدودة مرقمة بأيدي كبار الحرفيين.',
+  ateliersInfo: 'Our ateliers located across Florence, Paris, and Kyoto preserve traditional tailoring methods, hand-stitching every seam with meticulous attention to detail.',
+  ateliersInfoAr: 'تتوزع مشاغلنا بين فلورنسا وباريس وكيوتو، حيث نحافظ على أعرق أساليب الخياطة اليدوية والتفصيل، ونقوم بحياكة كل قصة بعناية فائقة وتفرد ت التام.',
+  sustainabilityInfo: 'We commit to 100% natural, ethically sourced cashmere, silk, and wool with zero synthetic waste and localized low-carbon production.',
+  sustainabilityInfoAr: 'نلتزم بنسبة 100% بالأقمشة الطبيعية المستدامة من كشمير وحرير وصوف طبيعي، خالية تماماً من النفايات الصناعية ومصنعة وفق أعلى المعايير الأخلاقية والبيئية.'
+};
+
+const SEED_CONVERSATIONS = [
+  { id:'c-demo1', customerName:'Amira K.', messages:[
+    { from:'customer', text:'Hi — does the cashmere overcoat run true to size?', ts: Date.now()-86400000 },
+    { from:'admin', text:'Hello Amira! It runs slightly generous through the shoulder — we\'d suggest your usual size.', ts: Date.now()-86300000 },
+  ]},
+  { id:'c-demo2', customerName:'James R.', messages:[
+    { from:'customer', text:'When does the private client archive open up?', ts: Date.now()-3600000 },
+  ]},
+];
+
+/* ---------------------------------------------------------
+   WEBHOOK / EVENT ARCHITECTURE
+--------------------------------------------------------- */
+function useWebhookLog() {
+  const [log, setLog] = useState(() => loadLS(LS_KEYS.webhooks, []));
+  const emit = useCallback((eventName, payload, webhookUrl) => {
+    const entry = { id: 'evt_' + Math.random().toString(36).slice(2,9), event: eventName, payload, ts: Date.now(), delivered: null };
+    setLog(prev => { const next = [entry, ...prev].slice(0, 50); saveLS(LS_KEYS.webhooks, next); return next; });
+    if (webhookUrl) {
+      fetch(webhookUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ event: eventName, payload, sentAt: new Date().toISOString() }) })
+        .then(() => setLog(prev => prev.map(e => e.id === entry.id ? {...e, delivered:true} : e)))
+        .catch(() => setLog(prev => prev.map(e => e.id === entry.id ? {...e, delivered:false} : e)));
+    }
+    return entry;
+  }, []);
+  return { log, emit };
+}
+
+/* ---------------------------------------------------------
+   SMALL UI PRIMITIVES
+--------------------------------------------------------- */
+function Reveal({ children, className='' }) {
+  const ref = useRef(null);
+  const [show, setShow] = useState(false);
+  useEffect(() => {
+    const obs = new IntersectionObserver(([entry]) => { if (entry.isIntersecting) { setShow(true); obs.disconnect(); } }, { threshold: 0.15 });
+    if (ref.current) obs.observe(ref.current);
+    return () => obs.disconnect();
+  }, []);
+  return <div ref={ref} className={`reveal ${show ? 'show' : ''} ${className}`}>{children}</div>;
+}
+function Eyebrow({ children, dark }) {
+  return (
+    <div className="flex items-center gap-3 mb-4">
+      <span className="h-px w-8 bg-gold"></span>
+      <span className={`text-[11px] tracking-widest2 uppercase ${dark ? 'text-goldlight' : 'text-golddim dark:text-goldlight'}`}>{children}</span>
+    </div>
+  );
+}
+function SwatchBlock({ palette, className='', children }) {
+  const p = PALETTES[palette] || PALETTES[0];
+  return <div className={`swatch-card ${className}`} style={{ background:`radial-gradient(120% 120% at 20% 10%, ${p.c1}, ${p.c2} 60%, ${p.c3})` }}>{children}</div>;
+}
+
+/* ---------------------------------------------------------
+   GARMENT LINE ART & PINTEREST REAL IMAGE SUPPORT
+--------------------------------------------------------- */
+function GarmentArt({ type, dark, stroke }) {
+  const s = stroke || (dark ? '#D8BD8A' : '#B08C4F');
+  const sw = 1.4;
+  const common = { fill:'none', stroke:s, strokeWidth:sw, strokeLinecap:'round', strokeLinejoin:'round', vectorEffect:'non-scaling-stroke' };
+  const paths = {
+    coat: <g {...common}>
+      <path d="M35 30 L50 18 L65 30 L62 40 L58 34 L58 92 L42 92 L42 34 L38 40 Z" />
+      <path d="M50 18 L50 45" /><path d="M42 40 L30 92" /><path d="M58 40 L70 92" />
+      <circle cx="47" cy="50" r="1.4" fill={s} /><circle cx="47" cy="60" r="1.4" fill={s} /><circle cx="47" cy="70" r="1.4" fill={s} />
+    </g>,
+    gown: <g {...common}>
+      <path d="M42 20 Q50 26 58 20 L60 30 Q50 36 40 30 Z" />
+      <path d="M40 30 Q35 60 30 95 Q50 100 70 95 Q65 60 60 30" />
+      <path d="M50 36 L50 90" strokeDasharray="1 4" />
+    </g>,
+    cufflinks: <g {...common}>
+      <circle cx="35" cy="50" r="12" /><circle cx="65" cy="50" r="12" />
+      <path d="M47 50 L53 50" />
+      <path d="M35 42 L35 58 M65 42 L65 58" strokeWidth="0.8" opacity="0.6" />
+    </g>,
+    trouser: <g {...common}>
+      <path d="M38 18 L62 18 L64 92 L54 92 L50 45 L46 92 L36 92 Z" />
+      <path d="M38 18 L38 30 M62 18 L62 30" />
+    </g>,
+    wrap: <g {...common}>
+      <path d="M20 35 Q50 20 80 35 Q75 55 65 50 Q50 65 35 50 Q25 55 20 35 Z" />
+      <path d="M25 38 Q50 50 75 38" strokeDasharray="1 3" />
+    </g>,
+    tote: <g {...common}>
+      <rect x="28" y="42" width="44" height="42" rx="2" />
+      <path d="M38 42 Q38 24 50 24 Q62 24 62 42" />
+      <path d="M28 55 L72 55" strokeWidth="0.8" opacity="0.5" />
+    </g>,
+    turtleneck: <g {...common}>
+      <path d="M38 30 Q50 24 62 30 L62 38 Q50 34 38 38 Z" />
+      <path d="M38 38 L30 92 L70 92 L62 38" />
+      <path d="M38 30 Q50 36 62 30" />
+    </g>,
+    skirt: <g {...common}>
+      <path d="M38 22 L62 22 L78 88 L22 88 Z" />
+      {[30,38,46,54,62,70].map((x,i) => <path key={i} d={`M${x} 22 L${x-6+i*2} 88`} strokeWidth="0.8" opacity="0.55" />)}
+    </g>,
+  };
+  return (
+    <svg viewBox="0 0 100 100" className="w-full h-full" preserveAspectRatio="xMidYMid meet">
+      {paths[type] || paths.coat}
+    </svg>
+  );
+}
+
+function ProductVisual({ product, dark, className='' }) {
+  const p = PALETTES[product.palette] || PALETTES[0];
+  if (product.img) {
+    return (
+      <div className={`relative overflow-hidden ${className}`}>
+        <img src={product.img} alt={product.name} className="w-full h-full object-cover transition-transform duration-700 hover:scale-105" />
+        <div className="absolute inset-0 bg-gradient-to-t from-ink/60 via-transparent to-transparent"></div>
+      </div>
+    );
+  }
+  return (
+    <div className={`relative overflow-hidden ${className}`}
+      style={{ background: dark
+        ? `radial-gradient(120% 120% at 25% 15%, ${p.c1}22, ${p.c3} 70%)`
+        : `radial-gradient(120% 120% at 25% 15%, ${p.c1}33, #FBF8F3 75%)` }}>
+      <div className="absolute inset-0 flex items-center justify-center p-8 opacity-90">
+        <GarmentArt type={product.art} dark={dark} />
+      </div>
+    </div>
+  );
+}
+
+/* ---------------------------------------------------------
+   3D HERO OBJECT (Three.js WebGL)
+--------------------------------------------------------- */
+function Hero3D({ dark }) {
+  const mountRef = useRef(null);
+  useEffect(() => {
+    if (!window.THREE || !mountRef.current) return;
+    const THREE = window.THREE;
+    const width = mountRef.current.clientWidth || 320;
+    const height = mountRef.current.clientHeight || 320;
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(45, width/height, 0.1, 100);
+    camera.position.z = 6.5;
+    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    renderer.setSize(width, height);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    mountRef.current.innerHTML = '';
+    mountRef.current.appendChild(renderer.domElement);
+
+    const group = new THREE.Group();
+    const geo = new THREE.IcosahedronGeometry(2.1, 0);
+    const wireMat = new THREE.MeshBasicMaterial({ color: 0xB08C4F, wireframe: true, transparent: true, opacity: 0.85 });
+    const mesh = new THREE.Mesh(geo, wireMat);
+    group.add(mesh);
+
+    const innerGeo = new THREE.IcosahedronGeometry(1.3, 0);
+    const innerMat = new THREE.MeshBasicMaterial({ color: 0xD8BD8A, wireframe: true, transparent: true, opacity: 0.5 });
+    const innerMesh = new THREE.Mesh(innerGeo, innerMat);
+    group.add(innerMesh);
+
+    scene.add(group);
+
+    let mouseX = 0, mouseY = 0;
+    const onMove = (e) => {
+      const rect = mountRef.current.getBoundingClientRect();
+      mouseX = ((e.clientX - rect.left) / rect.width - 0.5);
+      mouseY = ((e.clientY - rect.top) / rect.height - 0.5);
+    };
+    window.addEventListener('mousemove', onMove);
+
+    let raf;
+    const animate = () => {
+      mesh.rotation.y += 0.0032;
+      mesh.rotation.x += 0.0012;
+      innerMesh.rotation.y -= 0.002;
+      innerMesh.rotation.x -= 0.0016;
+      group.rotation.y += (mouseX*0.6 - group.rotation.y) * 0.03;
+      group.rotation.x += (mouseY*0.4 - group.rotation.x) * 0.03;
+      renderer.render(scene, camera);
+      raf = requestAnimationFrame(animate);
+    };
+    animate();
+
+    const onResize = () => {
+      if (!mountRef.current) return;
+      const w = mountRef.current.clientWidth, h = mountRef.current.clientHeight;
+      renderer.setSize(w, h); camera.aspect = w/h; camera.updateProjectionMatrix();
+    };
+    window.addEventListener('resize', onResize);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener('resize', onResize);
+      window.removeEventListener('mousemove', onMove);
+      geo.dispose(); innerGeo.dispose(); wireMat.dispose(); innerMat.dispose(); renderer.dispose();
+      if (mountRef.current) mountRef.current.innerHTML = '';
+    };
+  }, []);
+  return <div ref={mountRef} className="w-full h-full float-slow" />;
+}
+
+/* ---------------------------------------------------------
+   3D TILT WRAPPER
+--------------------------------------------------------- */
+function TiltCard({ children, className='' }) {
+  const ref = useRef(null);
+  const onMove = (e) => {
+    const el = ref.current; if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width - 0.5;
+    const y = (e.clientY - rect.top) / rect.height - 0.5;
+    el.style.transform = `perspective(900px) rotateY(${x*10}deg) rotateX(${-y*10}deg) translateY(-4px)`;
+  };
+  const onLeave = () => { if (ref.current) ref.current.style.transform = 'perspective(900px) rotateY(0) rotateX(0) translateY(0)'; };
+  return <div ref={ref} onMouseMove={onMove} onMouseLeave={onLeave} className={`tilt-card ${className}`}>{children}</div>;
+}
+
+/* ---------------------------------------------------------
+   NAV
+--------------------------------------------------------- */
+function Nav({ cartCount, onCartOpen, onGoAdmin, onNavClick, announcement, t, lang, setLang, dark, setDark }) {
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 40);
+    window.addEventListener('scroll', onScroll);
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+  return (
+    <div className="fixed top-0 left-0 right-0 z-40">
+      {announcement && (
+        <div className="bg-ink dark:bg-charcoal text-offwhite text-[11px] tracking-[0.25em] uppercase text-center py-2 px-4 overflow-hidden font-light">{announcement}</div>
+      )}
+      <nav className={`transition-all duration-500 ${
+        scrolled 
+          ? 'bg-cream/95 text-ink dark:bg-ink/95 dark:text-offwhite backdrop-blur shadow-[0_4px_25px_-4px_rgba(0,0,0,0.15)]' 
+          : dark 
+            ? 'bg-gradient-to-b from-ink/90 via-ink/40 to-transparent text-offwhite' 
+            : 'bg-gradient-to-b from-ink/70 via-ink/30 to-transparent text-offwhite'
+      }`}>
+        <div className="max-w-7xl mx-auto px-6 md:px-10 flex items-center justify-between py-5">
+          <button onClick={() => onNavClick('home')} className="font-display text-2xl md:text-3xl tracking-[0.25em] uppercase transition duration-300 hover:opacity-80">
+            {lang==='ar' ? <>ميزون <span className="text-gold font-light">نوار</span></> : <>Maison <span className="text-gold font-light">Noir</span></>}
+          </button>
+          
+          {/* Slim, elegant navigation links */}
+          <div className="hidden md:flex items-center gap-8 text-[11px] md:text-[12px] tracking-[0.3em] uppercase font-light">
+            <button onClick={() => onNavClick('women')} className="py-1 hover:text-gold transition-colors duration-300">{t.nav_women}</button>
+            <button onClick={() => onNavClick('men')} className="py-1 hover:text-gold transition-colors duration-300">{t.nav_men}</button>
+            <button onClick={() => onNavClick('accessories')} className="py-1 hover:text-gold transition-colors duration-300">{t.nav_acc}</button>
+            <button onClick={() => onNavClick('story')} className="py-1 hover:text-gold transition-colors duration-300">{t.nav_story}</button>
+          </div>
+          
+          <div className="flex items-center gap-4 md:gap-5">
+            {/* Clear Language Toggle Button */}
+            <button onClick={() => setLang(l => l==='en'?'ar':'en')} title="Language / اللغة"
+              className="px-3 py-1 rounded-full border border-gold/30 bg-ink/40 text-goldlight flex items-center gap-1.5 text-[11px] font-light tracking-[0.15em] hover:border-gold hover:bg-ink/70 transition">
+              <span>{lang==='ar' ? 'العربية' : 'English'}</span>
+              <span className="text-[9px] text-stone">({lang==='ar' ? 'EN' : 'ع'})</span>
+            </button>
+            
+            {/* Theme Toggle Button */}
+            <button onClick={() => setDark(d => !d)} title="Toggle Dark / Light Theme"
+              className="w-9 h-9 rounded-full border border-gold/30 bg-ink/40 text-offwhite flex items-center justify-center hover:border-gold hover:text-gold transition">
+              {dark ? (
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/></svg>
+              ) : (
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg>
+              )}
+            </button>
+            
+            <button onClick={onGoAdmin} className="hidden md:block text-[10px] tracking-[0.25em] uppercase font-light opacity-90 hover:opacity-100 hover:text-gold transition">{t.nav_owner}</button>
+            
+            <button onClick={onCartOpen} className="relative hover:text-gold transition">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.3"><path d="M6 7h15l-1.5 9.5a2 2 0 01-2 1.7H9a2 2 0 01-2-1.7L5 4H2"/><circle cx="10" cy="21" r="1"/><circle cx="18" cy="21" r="1"/></svg>
+              {cartCount > 0 && <span className="absolute -top-2 -right-2 bg-gold text-ink text-[10px] font-medium rounded-full w-4 h-4 flex items-center justify-center">{cartCount}</span>}
+            </button>
+          </div>
+        </div>
+      </nav>
+    </div>
+  );
+}
+
+/* ---------------------------------------------------------
+   HERO
+--------------------------------------------------------- */
+function Hero({ theme, onExplore, t, dark }) {
+  const hasVideo = theme.heroVideo || (theme.heroImage && (theme.heroImage.endsWith('.mp4') || theme.heroImage.endsWith('.webm') || theme.heroImage.includes('data:video')));
+  return (
+    <section className="relative h-screen min-h-[640px] flex items-end overflow-hidden bg-ink">
+      {hasVideo ? (
+        <div className="absolute inset-0 overflow-hidden flex items-center justify-center">
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="w-full h-full object-cover object-top md:object-center opacity-90 transition-opacity duration-700"
+            poster={theme.heroImage || './hero-bg.jpg'}
+          >
+            <source src={theme.heroVideo || theme.heroImage} type="video/mp4" />
+            <source src="./hero-video.mp4" type="video/mp4" />
+            <source src="./%D8%B3%D8%AA%D9%88%D8%B1%D9%8A_%D8%A8%D9%88%D8%B1%D8%AF_%D9%83%D8%A7%D9%85%D9%84_%D9%84%D9%82%D8%B7%D8%A7%D8%AA_.mp4" type="video/mp4" />
+          </video>
+          <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/40 to-ink/60"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-ink/70 via-transparent to-ink/50"></div>
+        </div>
+      ) : theme.heroImage ? (
+        <div className="absolute inset-0 overflow-hidden flex items-center justify-center">
+          <img 
+            src={theme.heroImage} 
+            alt="Editorial Background" 
+            className="w-full h-full object-cover object-top md:object-center opacity-90 transition-opacity duration-700" 
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/40 to-ink/60"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-ink/70 via-transparent to-ink/50"></div>
+        </div>
+      ) : (
+        <SwatchBlock palette={theme.heroBg} className="absolute inset-0 noise-overlay" />
+      )}
+      <div className="absolute top-1/2 -translate-y-1/2 right-[4%] md:right-[8%] w-[260px] h-[260px] md:w-[380px] md:h-[380px] opacity-80 pointer-events-none hidden sm:block">
+        <Hero3D dark={dark} />
+      </div>
+      <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-10 pb-20 md:pb-28 w-full">
+        <Reveal>
+          <p className="text-[11px] tracking-widest2 uppercase text-goldlight mb-6">{theme.heroEyebrow || t.hero_default_eyebrow}</p>
+          <h1 className="font-display text-offwhite text-5xl md:text-7xl lg:text-8xl leading-[0.95] whitespace-pre-line mb-6">{theme.heroTitle || t.hero_default_title}</h1>
+          <p className="text-offwhite/80 max-w-md mb-8 text-[15px] leading-relaxed">{theme.heroSubtitle || t.hero_default_sub}</p>
+          <button onClick={onExplore} className="gold-btn px-8 py-4 text-[11px] uppercase">{theme.heroCta || t.hero_default_cta}</button>
+        </Reveal>
+      </div>
+      <div className="absolute bottom-8 ltr:right-8 rtl:left-8 z-10 hidden md:flex items-center gap-2 text-offwhite/50 text-[10px] tracking-widest2 uppercase">
+        <span className="w-6 h-px bg-offwhite/40"></span> {t.scroll}
+      </div>
+    </section>
+  );
+}
+
+/* ---------------------------------------------------------
+   FEATURED COLLECTIONS SLIDER
+--------------------------------------------------------- */
+function CollectionsSlider({ collections, t, lang }) {
+  const scRef = useRef(null);
+  const scroll = (dir) => { if (scRef.current) scRef.current.scrollBy({ left: dir*420*(lang==='ar'?-1:1), behavior:'smooth' }); };
+  return (
+    <section className="py-24 md:py-32 bg-cream dark:bg-charcoal transition-colors duration-500">
+      <div className="max-w-7xl mx-auto px-6 md:px-10 flex items-end justify-between mb-10">
+        <Reveal>
+          <Eyebrow>{t.collections_eyebrow}</Eyebrow>
+          <h2 className="font-display text-4xl md:text-5xl text-ink dark:text-offwhite">{t.collections_title}</h2>
+        </Reveal>
+        <div className="hidden md:flex gap-3">
+          <button onClick={() => scroll(-1)} className="w-11 h-11 rounded-full border border-ink/15 dark:border-offwhite/20 dark:text-offwhite flex items-center justify-center hover:border-gold hover:text-gold transition">←</button>
+          <button onClick={() => scroll(1)} className="w-11 h-11 rounded-full border border-ink/15 dark:border-offwhite/20 dark:text-offwhite flex items-center justify-center hover:border-gold hover:text-gold transition">→</button>
+        </div>
+      </div>
+      <div ref={scRef} className="flex gap-6 overflow-x-auto snap-x px-6 md:px-10 pb-4">
+        {(collections || []).map((c,i) => (
+          <TiltCard key={c.id || i} className="snap-c shrink-0 w-[300px] md:w-[400px] group cursor-pointer">
+            <div className="h-[420px] md:h-[480px] rounded-sm overflow-hidden relative">
+              {c.img ? (
+                <img src={c.img} alt={c.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+              ) : (
+                <SwatchBlock palette={c.palette||0} className="w-full h-full transition-transform duration-700 group-hover:scale-105 flex items-center justify-center">
+                  <div className="w-2/3 h-2/3 opacity-70"><GarmentArt type={c.art||'coat'} stroke="#FBF8F3" /></div>
+                </SwatchBlock>
+              )}
+              <div className="absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/30 to-transparent"></div>
+              <div className="absolute bottom-6 ltr:left-6 rtl:right-6 text-offwhite">
+                <p className="text-[10px] tracking-widest2 uppercase text-goldlight mb-2">{lang==='ar' ? (c.tagAr||c.tag) : c.tag}</p>
+                <p className="font-display text-2xl">{lang==='ar' ? (c.nameAr||c.name) : c.name}</p>
+              </div>
+            </div>
+          </TiltCard>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+/* ---------------------------------------------------------
+   PRODUCT CARD
+--------------------------------------------------------- */
+function ProductCard({ product, onOpen, dark, t, lang }) {
+  return (
+    <TiltCard className="group cursor-pointer">
+      <div onClick={() => onOpen(product)}>
+        <div className="h-[380px] md:h-[440px] relative rounded-sm overflow-hidden mb-4 border border-ink/5 dark:border-offwhite/10">
+          <ProductVisual product={product} dark={dark} className="w-full h-full" />
+          {product.stock <= 5 && (
+            <span className="absolute top-3 ltr:left-3 rtl:right-3 bg-ink/85 text-goldlight text-[9px] tracking-widest2 uppercase px-2 py-1">{t.low_stock}</span>
+          )}
+          <div className="absolute inset-x-0 bottom-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity">
+            <span className="block text-center text-[10px] tracking-widest2 uppercase text-ink dark:text-offwhite bg-offwhite/90 dark:bg-ink/80 py-2">{t.quick_view}</span>
+          </div>
+        </div>
+        <div className="flex items-start justify-between">
+          <div>
+            <p className="text-[10px] tracking-widest2 uppercase text-stone mb-1">{lang==='ar' ? (CATEGORY_AR[product.category]||product.category) : product.category}</p>
+            <p className="font-display text-lg leading-tight text-ink dark:text-offwhite">{lang==='ar' ? product.nameAr : product.name}</p>
+          </div>
+          <p className="text-[14px] text-gold font-medium">${product.price.toLocaleString()}</p>
+        </div>
+      </div>
+    </TiltCard>
+  );
+}
+
+/* ---------------------------------------------------------
+   CATALOG + FILTERS
+--------------------------------------------------------- */
+function Catalog({ products, onOpen, dark, t, lang }) {
+  const [category, setCategory] = useState('All');
+  const [size, setSize] = useState('All');
+  const [color, setColor] = useState('All');
+  const [maxPrice, setMaxPrice] = useState(2500);
+  const [sort, setSort] = useState('newest');
+
+  const categories = ['All','Men','Women','Accessories'];
+  const catLabel = (c) => c==='All' ? (lang==='ar'?'الكل':'All') : (lang==='ar' ? CATEGORY_AR[c] : c);
+  const allSizes = useMemo(() => ['All', ...new Set(products.flatMap(p => p.sizes))], [products]);
+  const allColors = useMemo(() => ['All', ...new Set(products.flatMap(p => p.colors))], [products]);
+  const colorLabel = (c) => { if (c==='All') return lang==='ar'?'الكل':'All'; const p = PALETTES.find(pp=>pp.name===c); return lang==='ar' && p ? p.nameAr : c; };
+
+  const filtered = useMemo(() => {
+    let list = products.filter(p => (category === 'All' || p.category === category) && (size === 'All' || p.sizes.includes(size)) && (color === 'All' || p.colors.includes(color)) && p.price <= maxPrice);
+    if (sort === 'price-asc') list = [...list].sort((a,b) => a.price - b.price);
+    if (sort === 'price-desc') list = [...list].sort((a,b) => b.price - a.price);
+    if (sort === 'newest') list = [...list].reverse();
+    return list;
+  }, [products, category, size, color, maxPrice, sort]);
+
+  const FilterSelect = ({ label, value, setValue, options, labelFn }) => (
+    <div className="mb-6">
+      <p className="text-[10px] tracking-widest2 uppercase text-stone mb-2">{label}</p>
+      <div className="flex flex-wrap gap-2">
+        {options.map(opt => (
+          <button key={opt} onClick={() => setValue(opt)} className={`text-[11px] px-3 py-1.5 border rounded-full transition ${value===opt ? 'bg-ink text-cream border-ink dark:bg-gold dark:text-ink dark:border-gold' : 'border-ink/20 dark:border-offwhite/20 text-ink/70 dark:text-offwhite/70 hover:border-gold'}`}>
+            {labelFn ? labelFn(opt) : opt}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+
+  return (
+    <section id="shop" className="py-24 md:py-32 max-w-7xl mx-auto px-6 md:px-10">
+      <Reveal>
+        <Eyebrow>{t.trending_eyebrow}</Eyebrow>
+        <h2 className="font-display text-4xl md:text-5xl mb-14 text-ink dark:text-offwhite">{t.trending_title}</h2>
+      </Reveal>
+      <div className="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-12">
+        <aside className="md:sticky md:top-32 h-fit">
+          <FilterSelect label={t.filter_category} value={category} setValue={setCategory} options={categories} labelFn={catLabel} />
+          <FilterSelect label={t.filter_size} value={size} setValue={setSize} options={allSizes} />
+          <FilterSelect label={t.filter_color} value={color} setValue={setColor} options={allColors} labelFn={colorLabel} />
+          <div className="mb-6">
+            <p className="text-[10px] tracking-widest2 uppercase text-stone mb-2">{t.filter_price} — ${maxPrice}</p>
+            <input type="range" min="200" max="2500" step="50" value={maxPrice} onChange={e => setMaxPrice(+e.target.value)} className="w-full" />
+          </div>
+          <div>
+            <p className="text-[10px] tracking-widest2 uppercase text-stone mb-2">{t.filter_sort}</p>
+            <select value={sort} onChange={e => setSort(e.target.value)} className="w-full bg-transparent border border-ink/20 dark:border-offwhite/20 text-[12px] px-3 py-2 rounded-sm text-ink dark:text-offwhite">
+              <option value="newest" className="text-ink">{t.sort_newest}</option>
+              <option value="price-desc" className="text-ink">{t.sort_desc}</option>
+              <option value="price-asc" className="text-ink">{t.sort_asc}</option>
+            </select>
+          </div>
+        </aside>
+        <div>
+          {filtered.length === 0 ? (
+            <p className="text-stone text-sm">{t.no_match}</p>
+          ) : (
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-12">
+              {filtered.map(p => <ProductCard key={p.id} product={p} onOpen={onOpen} dark={dark} t={t} lang={lang} />)}
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ---------------------------------------------------------
+   BRAND STORY
+--------------------------------------------------------- */
+/* ---------------------------------------------------------
+   BRAND STORY
+--------------------------------------------------------- */
+function BrandStory({ theme, t, lang }) {
+  const stats = [
+    [theme?.stat1Num || '27', lang==='ar' ? (theme?.stat1LabelAr || t.stat_years) : (theme?.stat1Label || 'Years in Atelier')],
+    [theme?.stat2Num || '<200', lang==='ar' ? (theme?.stat2LabelAr || t.stat_pieces) : (theme?.stat2Label || 'Pieces per edition')],
+    [theme?.stat3Num || '4', lang==='ar' ? (theme?.stat3LabelAr || t.stat_countries) : (theme?.stat3Label || 'Countries of origin')],
+    [theme?.stat4Num || '100%', lang==='ar' ? (theme?.stat4LabelAr || t.stat_hand) : (theme?.stat4Label || 'Hand-finished')],
+  ];
+  return (
+    <section className="bg-ink text-offwhite py-28 md:py-36">
+      <div className="max-w-5xl mx-auto px-6 md:px-10 text-center">
+        <Reveal>
+          <Eyebrow dark>{t.story_eyebrow}</Eyebrow>
+          <h2 className="font-display text-4xl md:text-6xl leading-tight mb-8">
+            {t.story_title_1} <span className="text-gold italic">{t.story_title_2}</span>
+          </h2>
+          <p className="text-offwhite/60 max-w-2xl mx-auto leading-relaxed mb-10">{t.story_body}</p>
+          <div className="flex flex-wrap justify-center gap-12 text-left rtl:text-right">
+            {stats.map(([n,l],i) => (
+              <div key={i}>
+                <p className="font-display text-4xl text-gold">{n}</p>
+                <p className="text-[11px] tracking-widest2 uppercase text-offwhite/50 mt-1">{l}</p>
+              </div>
+            ))}
+          </div>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
+/* ---------------------------------------------------------
+   PROMO BANNER STRIP
+--------------------------------------------------------- */
+function PromoStrip({ text }) {
+  if (!text) return null;
+  return (
+    <div className="bg-parchment border-y border-gold/30 overflow-hidden py-3 text-ink">
+      <div className="flex whitespace-nowrap marquee-track">
+        {[0,1].map(i => (
+          <span key={i} className="mx-8 text-[12px] tracking-widest uppercase text-golddim">{text} &nbsp;&nbsp;✦&nbsp;&nbsp; {text} &nbsp;&nbsp;✦</span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ---------------------------------------------------------
+   CONTENT PAGES MODAL (Shipping, Returns, Contact, Story, Ateliers, Sustainability)
+--------------------------------------------------------- */
+function ContentModal({ itemKey, onClose, theme, lang, t }) {
+  if (!itemKey) return null;
+
+  const contentMap = {
+    shipping: {
+      title: lang==='ar' ? 'الشحن والتوصيل' : 'Shipping & Delivery',
+      icon: '🚚',
+      text: lang==='ar' ? (theme?.shippingInfoAr || t.shipping_default) : (theme?.shippingInfo || 'Worldwide complimentary express shipping on all orders over $500.')
+    },
+    returns: {
+      title: lang==='ar' ? 'سياسة الإرجاع والاستبدال' : 'Returns & Exchanges',
+      icon: '↩️',
+      text: lang==='ar' ? (theme?.returnsInfoAr || t.returns_default) : (theme?.returnsInfo || '30-day complimentary return window.')
+    },
+    contact: {
+      title: lang==='ar' ? 'تواصل معنا' : 'Contact Client Care',
+      icon: '💬',
+      text: lang==='ar' ? (theme?.contactInfoAr || t.contact_default) : (theme?.contactInfo || 'Client Care: concierge@maisonnoir.luxury'),
+      isContact: true
+    },
+    our_story: {
+      title: lang==='ar' ? 'قصة دار ميزون نوار' : 'Our Story',
+      icon: '📜',
+      text: lang==='ar' ? (theme?.ourStoryInfoAr || t.story_body) : (theme?.ourStoryInfo || 'Maison Noir was founded with a devotion to quiet luxury.')
+    },
+    ateliers: {
+      title: lang==='ar' ? 'المشاغل والحرفية' : 'Our Ateliers',
+      icon: '✂️',
+      text: lang==='ar' ? (theme?.ateliersInfoAr || t.ateliers_default) : (theme?.ateliersInfo || 'Our ateliers in Florence, Paris, and Kyoto.')
+    },
+    sustainability: {
+      title: lang==='ar' ? 'الاستدامة والالتزام البيئي' : 'Sustainability',
+      icon: '🌿',
+      text: lang==='ar' ? (theme?.sustainabilityInfoAr || t.sustain_default) : (theme?.sustainabilityInfo || '100% natural, ethically sourced materials.')
+    }
+  };
+
+  const item = contentMap[itemKey] || { title: 'معلومات', text: '' };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink/80 backdrop-blur-sm">
+      <div className="bg-charcoal border border-gold/30 p-8 rounded-sm w-full max-w-lg text-offwhite space-y-6 relative shadow-2xl">
+        <button onClick={onClose} className="absolute top-4 ltr:right-4 rtl:left-4 w-8 h-8 rounded-full bg-ink text-goldlight hover:text-offwhite flex items-center justify-center border border-gold/20">✕</button>
+        
+        <div className="flex items-center gap-3 border-b border-gold/20 pb-4">
+          <span className="text-3xl">{item.icon}</span>
+          <h3 className="font-display text-2xl text-gold">{item.title}</h3>
+        </div>
+
+        <div className="text-sm leading-relaxed text-offwhite/90 whitespace-pre-line bg-ink/50 p-5 rounded-sm border border-gold/10">
+          {item.text}
+        </div>
+
+        {item.isContact && (
+          <div className="flex flex-wrap gap-3 pt-2">
+            <a 
+              href="https://wa.me/966501234567" 
+              target="_blank" 
+              rel="noreferrer" 
+              className="flex-1 bg-green-700 hover:bg-green-600 text-white text-xs font-medium py-3 px-4 rounded-sm text-center transition flex items-center justify-center gap-2"
+            >
+              💬 {lang==='ar'?'محادثة واتساب مباشرة':'Direct WhatsApp Chat'}
+            </a>
+            <a 
+              href="mailto:concierge@maisonnoir.luxury" 
+              className="flex-1 bg-gold hover:bg-goldlight text-ink text-xs font-medium py-3 px-4 rounded-sm text-center transition flex items-center justify-center gap-2"
+            >
+              ✉️ {lang==='ar'?'إرسال بريد إلكتروني':'Send Email'}
+            </a>
+          </div>
+        )}
+
+        <div className="pt-2 text-center">
+          <button onClick={onClose} className="text-xs text-stone hover:text-gold underline">{lang==='ar'?'إغلاق النافذة':'Close Window'}</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ---------------------------------------------------------
+   FOOTER
+--------------------------------------------------------- */
+function Footer({ onGoAdmin, onOpenContent, onNavClick, t }) {
+  return (
+    <footer className="bg-ink text-offwhite/60 pt-20 pb-10">
+      <div className="max-w-7xl mx-auto px-6 md:px-10 grid grid-cols-2 md:grid-cols-4 gap-10 mb-16">
+        <div className="col-span-2">
+          <p className="font-display text-2xl text-offwhite mb-4">Maison Noir</p>
+          <p className="text-sm max-w-xs leading-relaxed">{t.footer_tag}</p>
+        </div>
+
+        {/* Shop Category Links */}
+        <div>
+          <p className="text-[11px] tracking-widest2 uppercase text-gold mb-4">{t.footer_shop}</p>
+          <div className="flex flex-col gap-2 text-sm">
+            <button onClick={() => onNavClick('women')} className="ltr:text-left rtl:text-right hover:text-offwhite transition">{t.footer_women}</button>
+            <button onClick={() => onNavClick('men')} className="ltr:text-left rtl:text-right hover:text-offwhite transition">{t.footer_men}</button>
+            <button onClick={() => onNavClick('accessories')} className="ltr:text-left rtl:text-right hover:text-offwhite transition">{t.footer_acc}</button>
+          </div>
+        </div>
+
+        {/* House Info Links */}
+        <div>
+          <p className="text-[11px] tracking-widest2 uppercase text-gold mb-4">{t.footer_house}</p>
+          <div className="flex flex-col gap-2 text-sm">
+            <button onClick={() => onOpenContent('our_story')} className="ltr:text-left rtl:text-right hover:text-gold transition text-offwhite/80">{t.footer_our_story}</button>
+            <button onClick={() => onOpenContent('ateliers')} className="ltr:text-left rtl:text-right hover:text-gold transition text-offwhite/80">{t.footer_ateliers}</button>
+            <button onClick={() => onOpenContent('sustainability')} className="ltr:text-left rtl:text-right hover:text-gold transition text-offwhite/80">{t.footer_sustain}</button>
+          </div>
+        </div>
+
+        {/* Customer Care Policy Links */}
+        <div>
+          <p className="text-[11px] tracking-widest2 uppercase text-gold mb-4">{t.footer_care}</p>
+          <div className="flex flex-col gap-2 text-sm">
+            <button onClick={() => onOpenContent('shipping')} className="ltr:text-left rtl:text-right hover:text-gold transition text-offwhite/80">{t.footer_shipping}</button>
+            <button onClick={() => onOpenContent('returns')} className="ltr:text-left rtl:text-right hover:text-gold transition text-offwhite/80">{t.footer_returns}</button>
+            <button onClick={() => onOpenContent('contact')} className="ltr:text-left rtl:text-right hover:text-gold transition text-offwhite/80">{t.footer_contact}</button>
+          </div>
+        </div>
+      </div>
+      <div className="max-w-7xl mx-auto px-6 md:px-10 flex flex-col md:flex-row justify-between items-center border-t border-offwhite/10 pt-6 text-[11px] gap-4">
+        <span>© {new Date().getFullYear()} Maison Noir. {t.footer_rights}</span>
+        <button onClick={onGoAdmin} className="tracking-widest2 uppercase hover:text-gold transition">{t.footer_owner}</button>
+      </div>
+    </footer>
+  );
+}
+
+/* ---------------------------------------------------------
+   PDP MODAL
+--------------------------------------------------------- */
+function ProductModal({ product, onClose, onAddToCart, dark, t, lang }) {
+  const [size, setSize] = useState(product?.sizes?.[0]);
+  const [color, setColor] = useState(product?.colors?.[0]);
+  const [qty, setQty] = useState(1);
+  const [descOpen, setDescOpen] = useState(true);
+  if (!product) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-0 md:p-8">
+      <div className="absolute inset-0 bg-ink/80 backdrop-blur-sm" onClick={onClose}></div>
+      <div className="fade-scale relative bg-offwhite dark:bg-charcoal text-ink dark:text-offwhite w-full h-full md:h-auto md:max-h-[88vh] md:max-w-5xl overflow-y-auto grid grid-cols-1 md:grid-cols-2">
+        <button onClick={onClose} className="absolute top-4 ltr:right-4 rtl:left-4 z-10 w-9 h-9 rounded-full bg-ink/80 text-offwhite flex items-center justify-center">✕</button>
+        <div className="relative h-[340px] md:h-full">
+          <ProductVisual product={product} dark={dark} className="w-full h-full" />
+        </div>
+        <div className="p-8 md:p-12">
+          <p className="text-[10px] tracking-widest2 uppercase text-stone mb-2">{lang==='ar' ? (CATEGORY_AR[product.category]||product.category) : product.category}</p>
+          <h3 className="font-display text-3xl md:text-4xl mb-3">{lang==='ar' ? product.nameAr : product.name}</h3>
+          <p className="text-gold text-xl font-medium mb-6">${product.price.toLocaleString()}</p>
+
+          <div className="mb-6">
+            <p className="text-[10px] tracking-widest2 uppercase text-stone mb-2">{t.color_label} — {color}</p>
+            <div className="flex gap-2">
+              {product.colors.map(c => (
+                <button key={c} onClick={() => setColor(c)} className={`px-3 py-1 text-[11px] border rounded-sm ${color===c ? 'border-gold text-gold' : 'border-ink/20 dark:border-offwhite/20'}`}>
+                  {c}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="mb-6">
+            <p className="text-[10px] tracking-widest2 uppercase text-stone mb-2">{t.size_label} — {size}</p>
+            <div className="flex flex-wrap gap-2">
+              {product.sizes.map(s => (
+                <button key={s} onClick={() => setSize(s)} className={`px-4 py-2 text-[12px] border rounded-sm ${size===s ? 'bg-ink text-cream border-ink dark:bg-gold dark:text-ink' : 'border-ink/20 dark:border-offwhite/20 hover:border-gold'}`}>{s}</button>
+              ))}
+            </div>
+          </div>
+
+          <div className="mb-6 flex items-center gap-4">
+            <p className="text-[10px] tracking-widest2 uppercase text-stone">{t.qty_label}</p>
+            <div className="flex items-center border border-ink/20 dark:border-offwhite/20 rounded-sm">
+              <button onClick={() => setQty(q => Math.max(1,q-1))} className="w-9 h-9">−</button>
+              <span className="w-9 text-center text-sm">{qty}</span>
+              <button onClick={() => setQty(q => Math.min(product.stock,q+1))} className="w-9 h-9">+</button>
+            </div>
+            <span className={`text-[11px] ${product.stock>5 ? 'text-stone' : 'text-gold'}`}>
+              {product.stock > 0 ? `${product.stock} ${t.in_stock}` : t.out_stock}
+            </span>
+          </div>
+
+          <button disabled={product.stock===0} onClick={() => { onAddToCart({ ...product, size, color, qty }); onClose(); }}
+            className="gold-btn w-full py-4 text-[11px] uppercase disabled:opacity-40 mb-8">
+            {product.stock===0 ? t.out_stock : t.add_to_bag}
+          </button>
+
+          <div className="border-t border-ink/10 dark:border-offwhite/10 pt-6">
+            <button onClick={() => setDescOpen(o=>!o)} className="flex items-center justify-between w-full text-[11px] tracking-widest2 uppercase text-stone mb-3">
+              <span>{t.desc_details}</span><span>{descOpen ? '−' : '+'}</span>
+            </button>
+            {descOpen && <p className="text-sm opacity-80 leading-relaxed">{lang==='ar' ? product.descAr : product.desc}</p>}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ---------------------------------------------------------
+   CART DRAWER
+--------------------------------------------------------- */
+function CartDrawer({ open, onClose, cart, setCart, onCheckout, t, lang }) {
+  const [promo, setPromo] = useState('');
+  const [appliedPromo, setAppliedPromo] = useState(null);
+  const [promoMsg, setPromoMsg] = useState('');
+
+  const subtotal = cart.reduce((s,i) => s + i.price*i.qty, 0);
+  const discount = appliedPromo ? subtotal * appliedPromo.rate : 0;
+  const total = subtotal - discount;
+
+  const updateQty = (idx, delta) => { setCart(prev => prev.map((it,i) => i===idx ? {...it, qty: Math.max(1, it.qty+delta)} : it)); };
+  const removeItem = (idx) => setCart(prev => prev.filter((_,i) => i!==idx));
+
+  const applyPromo = () => {
+    const code = promo.trim().toUpperCase();
+    if (code === 'LUXE10') { setAppliedPromo({ code, rate: 0.10 }); setPromoMsg('10% applied — LUXE10'); }
+    else if (code === 'LUXE20') { setAppliedPromo({ code, rate: 0.20 }); setPromoMsg('20% applied — LUXE20'); }
+    else { setAppliedPromo(null); setPromoMsg(code ? 'Code not recognized' : ''); }
+  };
+
+  return (
+    <>
+      <div className={`fixed inset-0 z-40 bg-ink/50 transition-opacity duration-500 ${open ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`} onClick={onClose}></div>
+      <div className={`drawer fixed top-0 ltr:right-0 rtl:left-0 z-50 h-full w-full max-w-md bg-offwhite dark:bg-charcoal text-ink dark:text-offwhite flex flex-col ${open ? 'translate-x-0' : 'ltr:translate-x-full rtl:-translate-x-full'}`}>
+        <div className="flex items-center justify-between p-6 border-b border-ink/10 dark:border-offwhite/10">
+          <p className="font-display text-2xl">{t.bag_title} ({cart.length})</p>
+          <button onClick={onClose} className="text-xl">✕</button>
+        </div>
+        <div className="flex-1 overflow-y-auto p-6">
+          {cart.length === 0 ? (
+            <p className="text-stone text-sm mt-10 text-center">{t.bag_empty}</p>
+          ) : cart.map((item,idx) => (
+            <div key={idx} className="flex gap-4 mb-6">
+              <div className="w-20 h-24 shrink-0 rounded-sm overflow-hidden border border-ink/10 dark:border-offwhite/10">
+                <ProductVisual product={item} dark={false} className="w-full h-full" />
+              </div>
+              <div className="flex-1">
+                <p className="font-display text-lg leading-tight">{lang==='ar'?item.nameAr:item.name}</p>
+                <p className="text-[11px] text-stone mb-2">{item.color} / {item.size}</p>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center border border-ink/20 dark:border-offwhite/20 rounded-sm">
+                    <button onClick={() => updateQty(idx,-1)} className="w-7 h-7 text-sm">−</button>
+                    <span className="w-7 text-center text-xs">{item.qty}</span>
+                    <button onClick={() => updateQty(idx,1)} className="w-7 h-7 text-sm">+</button>
+                  </div>
+                  <p className="text-gold text-sm font-medium">${(item.price*item.qty).toLocaleString()}</p>
+                </div>
+                <button onClick={() => removeItem(idx)} className="text-[10px] tracking-widest2 uppercase text-stone hover:text-gold mt-2">{t.admin_delete}</button>
+              </div>
+            </div>
+          ))}
+        </div>
+        {cart.length > 0 && (
+          <div className="p-6 border-t border-ink/10 dark:border-offwhite/10">
+            <div className="flex gap-2 mb-3">
+              <input value={promo} onChange={e=>setPromo(e.target.value)} placeholder={t.promo_placeholder}
+                className="flex-1 border border-ink/20 dark:border-offwhite/20 rounded-sm px-3 py-2 text-sm bg-transparent" />
+              <button onClick={applyPromo} className="ghost-btn px-4 text-[11px] uppercase rounded-sm">{t.apply}</button>
+            </div>
+            {promoMsg && <p className="text-[11px] text-gold mb-3">{promoMsg}</p>}
+            <div className="flex justify-between text-sm mb-1"><span>{t.subtotal}</span><span>${subtotal.toLocaleString()}</span></div>
+            {appliedPromo && <div className="flex justify-between text-sm mb-1 text-gold"><span>{t.discount}</span><span>-${discount.toFixed(0)}</span></div>}
+            <div className="flex justify-between font-display text-xl mb-5"><span>{t.total}</span><span>${total.toFixed(0)}</span></div>
+            <button onClick={() => onCheckout({ items: cart, subtotal, discount, total, promo: appliedPromo?.code||null })}
+              className="gold-btn w-full py-4 text-[11px] uppercase">{t.checkout_btn}</button>
+          </div>
+        )}
+      </div>
+    </>
+  );
+}
+
+/* ---------------------------------------------------------
+   CHECKOUT MODAL
+--------------------------------------------------------- */
+function CheckoutModal({ data, onClose, onComplete, t }) {
+  const [step, setStep] = useState(1);
+  const [form, setForm] = useState({ name:'', email:'', address:'', city:'', country:'', card:'', exp:'', cvv:'' });
+  if (!data) return null;
+
+  const set = (k) => (e) => setForm(f => ({...f, [k]: e.target.value}));
+  const next = () => setStep(s => Math.min(3, s+1));
+  const back = () => setStep(s => Math.max(1, s-1));
+
+  const place = () => {
+    onComplete({ ...data, customer: form, placedAt: Date.now() });
+    setStep(4);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-ink/70 backdrop-blur-sm" onClick={step<4?onClose:undefined}></div>
+      <div className="fade-scale relative bg-offwhite dark:bg-charcoal text-ink dark:text-offwhite w-full max-w-lg rounded-sm max-h-[90vh] overflow-y-auto p-8 md:p-10">
+        {step < 4 && (
+          <div className="flex items-center gap-2 mb-8">
+            {[1,2,3].map(n => (
+              <div key={n} className={`flex-1 h-px ${n<=step ? 'bg-gold' : 'bg-ink/15 dark:bg-offwhite/15'}`}></div>
+            ))}
+          </div>
+        )}
+        {step===1 && (
+          <div>
+            <h3 className="font-display text-2xl mb-6">{t.step_shipping}</h3>
+            <div className="grid grid-cols-2 gap-3 mb-3">
+              <input placeholder={t.full_name} value={form.name} onChange={set('name')} className="col-span-2 bg-transparent border border-ink/20 dark:border-offwhite/20 rounded-sm px-3 py-2.5 text-sm" />
+              <input placeholder={t.email} value={form.email} onChange={set('email')} className="col-span-2 bg-transparent border border-ink/20 dark:border-offwhite/20 rounded-sm px-3 py-2.5 text-sm" />
+              <input placeholder={t.address} value={form.address} onChange={set('address')} className="col-span-2 bg-transparent border border-ink/20 dark:border-offwhite/20 rounded-sm px-3 py-2.5 text-sm" />
+              <input placeholder={t.city} value={form.city} onChange={set('city')} className="bg-transparent border border-ink/20 dark:border-offwhite/20 rounded-sm px-3 py-2.5 text-sm" />
+              <input placeholder={t.country} value={form.country} onChange={set('country')} className="bg-transparent border border-ink/20 dark:border-offwhite/20 rounded-sm px-3 py-2.5 text-sm" />
+            </div>
+            <button onClick={next} className="gold-btn w-full py-4 text-[11px] uppercase mt-4">{t.continue_payment}</button>
+          </div>
+        )}
+        {step===2 && (
+          <div>
+            <h3 className="font-display text-2xl mb-6">{t.step_payment}</h3>
+            <div className="grid grid-cols-2 gap-3 mb-3">
+              <input placeholder={t.card_number} value={form.card} onChange={set('card')} className="col-span-2 bg-transparent border border-ink/20 dark:border-offwhite/20 rounded-sm px-3 py-2.5 text-sm" />
+              <input placeholder={t.exp} value={form.exp} onChange={set('exp')} className="bg-transparent border border-ink/20 dark:border-offwhite/20 rounded-sm px-3 py-2.5 text-sm" />
+              <input placeholder={t.cvv} value={form.cvv} onChange={set('cvv')} className="bg-transparent border border-ink/20 dark:border-offwhite/20 rounded-sm px-3 py-2.5 text-sm" />
+            </div>
+            <p className="text-[11px] text-stone mb-4">{t.payment_note}</p>
+            <div className="flex gap-3">
+              <button onClick={back} className="flex-1 border border-ink/20 dark:border-offwhite/20 py-4 text-[11px] uppercase">{t.back}</button>
+              <button onClick={next} className="gold-btn flex-1 py-4 text-[11px] uppercase">{t.review_order}</button>
+            </div>
+          </div>
+        )}
+        {step===3 && (
+          <div>
+            <h3 className="font-display text-2xl mb-6">{t.step_review}</h3>
+            <div className="mb-4 space-y-2 max-h-48 overflow-y-auto">
+              {data.items.map((it,i) => (
+                <div key={i} className="flex justify-between text-sm"><span>{it.name} × {it.qty}</span><span>${(it.price*it.qty).toLocaleString()}</span></div>
+              ))}
+            </div>
+            <div className="border-t border-ink/10 dark:border-offwhite/10 pt-3 text-sm space-y-1 mb-6">
+              <div className="flex justify-between"><span>{t.subtotal}</span><span>${data.subtotal.toLocaleString()}</span></div>
+              {data.discount>0 && <div className="flex justify-between text-gold"><span>{t.discount}</span><span>-${data.discount.toFixed(0)}</span></div>}
+              <div className="flex justify-between font-display text-lg"><span>{t.total}</span><span>${data.total.toFixed(0)}</span></div>
+            </div>
+            <p className="text-sm opacity-70 mb-6">{t.shipping_to} {form.name || 'Guest'}, {form.city || '—'}, {form.country || '—'}</p>
+            <div className="flex gap-3">
+              <button onClick={back} className="flex-1 border border-ink/20 dark:border-offwhite/20 py-4 text-[11px] uppercase">{t.back}</button>
+              <button onClick={place} className="gold-btn flex-1 py-4 text-[11px] uppercase">{t.place_order}</button>
+            </div>
+          </div>
+        )}
+        {step===4 && (
+          <div className="text-center py-6">
+            <div className="w-14 h-14 rounded-full bg-gold/20 text-gold flex items-center justify-center mx-auto mb-6 text-2xl">✓</div>
+            <h3 className="font-display text-3xl mb-3">{t.order_confirmed}</h3>
+            <p className="text-sm opacity-70 mb-8">{t.order_thanks}, {form.name || 'valued client'}. {t.order_sent} {form.email || 'your email'}.</p>
+            <button onClick={onClose} className="gold-btn px-8 py-4 text-[11px] uppercase">{t.continue_shopping}</button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ---------------------------------------------------------
+   CHAT WIDGET
+--------------------------------------------------------- */
+function ChatWidget({ conversations, setConversations, emit, webhookUrl, t }) {
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState('');
+  const [nameSet, setNameSet] = useState(false);
+  const [text, setText] = useState('');
+  const [convId, setConvId] = useState(null);
+  const scrollRef = useRef(null);
+
+  useEffect(() => {
+    let cid = loadLS(LS_KEYS.customerId, null);
+    if (!cid) { cid = 'c-' + Math.random().toString(36).slice(2,9); saveLS(LS_KEYS.customerId, cid); }
+    setConvId(cid);
+    const existing = conversations.find(c => c.id === cid);
+    if (existing) setNameSet(true);
+  }, []);
+
+  useEffect(() => {
+    if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+  }, [open, conversations]);
+
+  const conv = conversations.find(c => c.id === convId);
+
+  const startChat = () => {
+    if (!name.trim()) return;
+    setConversations(prev => {
+      if (prev.find(c => c.id === convId)) return prev;
+      return [...prev, { id: convId, customerName: name.trim(), unread: 0, messages: [] }];
+    });
+    setNameSet(true);
+  };
+
+  const send = () => {
+    if (!text.trim()) return;
+    const msg = { from:'customer', text: text.trim(), ts: Date.now() };
+    setConversations(prev => {
+      const existing = prev.find(c => c.id === convId);
+      const next = existing 
+        ? prev.map(c => c.id===convId ? {...c, messages:[...c.messages, msg]} : c)
+        : [...prev, { id: convId, customerName: name || 'Guest', unread: 0, messages: [msg] }];
+      saveLS(LS_KEYS.conversations, next);
+      return next;
+    });
+    emit('message.created', { conversationId: convId, customerName: name || 'Guest', text: msg.text }, webhookUrl);
+    setText('');
+    setTimeout(() => { if (window.cloudSyncTrigger) window.cloudSyncTrigger(); }, 50);
+  };
+
+  return (
+    <>
+      <button onClick={() => setOpen(o=>!o)} className="fixed bottom-6 ltr:right-6 rtl:left-6 z-40 w-16 h-16 rounded-full gold-btn shadow-2xl flex items-center justify-center text-xl">
+        {open ? '✕' : '✦'}
+      </button>
+      {open && (
+        <div className="fade-scale fixed bottom-28 ltr:right-6 rtl:left-6 z-40 w-[340px] max-w-[90vw] bg-offwhite dark:bg-charcoal text-ink dark:text-offwhite rounded-sm shadow-2xl border border-gold/20 flex flex-col h-[440px]">
+          <div className="bg-ink text-offwhite px-5 py-4 flex items-center gap-3">
+            <span className="w-2 h-2 rounded-full bg-gold"></span>
+            <div>
+              <p className="font-display text-lg leading-none">{t.chat_brand}</p>
+              <p className="text-[10px] text-offwhite/50 tracking-widest2 uppercase mt-1">{t.chat_care}</p>
+            </div>
+          </div>
+          {!nameSet ? (
+            <div className="flex-1 flex flex-col justify-center p-6">
+              <p className="text-sm opacity-80 mb-4">{t.chat_intro}</p>
+              <input value={name} onChange={e=>setName(e.target.value)} placeholder={t.chat_name_ph} className="bg-transparent border border-ink/20 dark:border-offwhite/20 rounded-sm px-3 py-2.5 text-sm mb-3" />
+              <button onClick={startChat} className="gold-btn py-3 text-[11px] uppercase">{t.chat_start}</button>
+            </div>
+          ) : (
+            <>
+              <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3">
+                {(conv?.messages || []).length === 0 && (
+                  <p className="text-xs text-stone text-center mt-10">{t.chat_empty}</p>
+                )}
+                {(conv?.messages || []).map((m,i) => (
+                  <div key={i} className={`flex ${m.from==='customer' ? 'justify-end' : 'justify-start'}`}>
+                    <div className={`max-w-[75%] px-3 py-2 rounded-sm text-[13px] ${m.from==='customer' ? 'bg-ink text-offwhite dark:bg-gold dark:text-ink' : 'bg-parchment text-ink dark:bg-char2 dark:text-offwhite'}`}>
+                      {m.text}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="p-3 border-t border-ink/10 dark:border-offwhite/10 flex gap-2">
+                <input value={text} onChange={e=>setText(e.target.value)} onKeyDown={e => e.key==='Enter' && send()} placeholder={t.chat_type_ph} className="flex-1 bg-transparent border border-ink/20 dark:border-offwhite/20 rounded-sm px-3 py-2 text-sm" />
+                <button onClick={send} className="gold-btn px-4 rounded-sm text-sm">→</button>
+              </div>
+            </>
+          )}
+        </div>
+      )}
+    </>
+  );
+}
+
+/* ===========================================================
+   STOREFRONT ROOT
+=========================================================== */
+function Storefront({ products, theme, collections, cart, setCart, orders, setOrders, conversations, setConversations, emit, onGoAdmin, t, lang, setLang, dark, setDark }) {
+  const [activeProduct, setActiveProduct] = useState(null);
+  const [cartOpen, setCartOpen] = useState(false);
+  const [checkoutData, setCheckoutData] = useState(null);
+  const [contentModalItem, setContentModalItem] = useState(null);
+
+  const addToCart = (item) => setCart(prev => [...prev, item]);
+  const cartCount = cart.reduce((s,i) => s+i.qty, 0);
+
+  const handleNav = (key) => {
+    if (key === 'home') window.scrollTo({top:0, behavior:'smooth'});
+    else if (key === 'story') document.getElementById('story')?.scrollIntoView({behavior:'smooth'});
+    else document.getElementById('shop')?.scrollIntoView({behavior:'smooth'});
+  };
+
+  const handleCheckout = (data) => { setCartOpen(false); setCheckoutData(data); };
+  const completeOrder = (order) => {
+    const id = 'ORD-' + Math.floor(1000 + Math.random()*9000);
+    const fullOrder = { id, ...order, status: 'Pending' };
+    setOrders(prev => [fullOrder, ...prev]);
+    emit('order.created', { orderId: id, total: order.total, items: order.items.length, customer: order.customer.name }, theme.webhookUrl);
+    setCart([]);
+  };
+
+  return (
+    <div>
+      <Nav cartCount={cartCount} onCartOpen={()=>setCartOpen(true)} onGoAdmin={onGoAdmin} onNavClick={handleNav} announcement={theme.announcement} t={t} lang={lang} setLang={setLang} dark={dark} setDark={setDark} />
+      <Hero theme={theme} onExplore={() => handleNav('shop')} t={t} dark={dark} />
+      <CollectionsSlider collections={collections} t={t} lang={lang} />
+      <PromoStrip text={theme.promoBanner} />
+      <Catalog products={products} onOpen={setActiveProduct} dark={dark} t={t} lang={lang} />
+      <div id="story"><BrandStory theme={theme} t={t} lang={lang} /></div>
+      <Footer onGoAdmin={onGoAdmin} onOpenContent={setContentModalItem} onNavClick={handleNav} t={t} />
+
+      <ProductModal product={activeProduct} onClose={()=>setActiveProduct(null)} onAddToCart={addToCart} dark={dark} t={t} lang={lang} />
+      <ContentModal itemKey={contentModalItem} onClose={()=>setContentModalItem(null)} theme={theme} lang={lang} t={t} />
+      <CartDrawer open={cartOpen} onClose={()=>setCartOpen(false)} cart={cart} setCart={setCart} onCheckout={handleCheckout} t={t} lang={lang} />
+      <CheckoutModal data={checkoutData} onClose={()=>setCheckoutData(null)} onComplete={completeOrder} t={t} />
+      <ChatWidget conversations={conversations} setConversations={setConversations} emit={emit} webhookUrl={theme.webhookUrl} t={t} />
+    </div>
+  );
+}
+
+/* ===========================================================
+   ADMIN DASHBOARD COMPONENTS
+=========================================================== */
+function AdminLogin({ onSuccess, onBack, t }) {
+  const [pass, setPass] = useState('');
+  const [err, setErr] = useState('');
+  const submit = () => {
+    if (pass === 'admin123') onSuccess();
+    else setErr(t.owner_wrong);
+  };
+  return (
+    <div className="min-h-screen bg-ink flex items-center justify-center px-6">
+      <div className="fade-scale bg-charcoal border border-gold/20 rounded-sm p-10 w-full max-w-sm text-center">
+        <p className="font-display text-3xl text-offwhite mb-2">Maison <span className="text-gold">Noir</span></p>
+        <p className="text-[11px] tracking-widest2 uppercase text-stone mb-8">{t.owner_access}</p>
+        <input type="password" value={pass} onChange={e=>setPass(e.target.value)} onKeyDown={e=>e.key==='Enter'&&submit()}
+          placeholder={t.owner_pass_ph} className="w-full bg-ink border border-gold/20 rounded-sm px-4 py-3 text-offwhite text-sm mb-3" />
+        {err && <p className="text-[11px] text-gold mb-3">{err}</p>}
+        <button onClick={submit} className="gold-btn w-full py-3 text-[11px] uppercase mb-4">{t.owner_enter}</button>
+        <button onClick={onBack} className="text-[11px] tracking-widest2 uppercase text-stone hover:text-offwhite">{t.owner_back}</button>
+      </div>
+    </div>
+  );
+}
+
+function AdminSidebar({ tab, setTab, onExit, t }) {
+  const items = [
+    ['overview', t.admin_overview], ['products', t.admin_products], ['orders', t.admin_orders],
+    ['theme', t.admin_theme], ['chat', t.admin_chat], ['webhooks', t.admin_webhooks],
+  ];
+  return (
+    <div className="w-full md:w-64 shrink-0 bg-charcoal text-offwhite md:min-h-screen p-6 border-r border-gold/10 flex flex-col justify-between">
+      <div>
+        <p className="font-display text-2xl mb-1">Maison <span className="text-gold">Noir</span></p>
+        <p className="text-[10px] tracking-widest2 uppercase text-stone mb-8">Owner Dashboard</p>
+        <div className="flex md:flex-col gap-1 flex-wrap">
+          {items.map(([key,label]) => (
+            <button key={key} onClick={()=>setTab(key)}
+              className={`text-[12px] tracking-widest uppercase px-4 py-3 rounded-sm transition ltr:text-left rtl:text-right ${tab===key ? 'bg-gold text-ink font-medium' : 'text-offwhite/70 hover:bg-char2'}`}>
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="pt-8 border-t border-gold/10 mt-6">
+        <button onClick={onExit} className="w-full ltr:text-left rtl:text-right text-[11px] tracking-widest2 uppercase text-stone hover:text-gold transition">{t.admin_exit}</button>
+      </div>
+    </div>
+  );
+}
+
+function AdminOverview({ products, orders, conversations, t }) {
+  const totalRev = orders.reduce((s,o)=>s+o.total,0);
+  return (
+    <div className="space-y-8 text-offwhite">
+      <h2 className="font-display text-3xl mb-6">{t.admin_overview}</h2>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-charcoal p-6 border border-gold/20 rounded-sm">
+          <p className="text-[10px] tracking-widest2 uppercase text-stone mb-2">{t.admin_revenue}</p>
+          <p className="font-display text-3xl text-gold">${totalRev.toLocaleString()}</p>
+        </div>
+        <div className="bg-charcoal p-6 border border-gold/20 rounded-sm">
+          <p className="text-[10px] tracking-widest2 uppercase text-stone mb-2">{t.admin_total_orders}</p>
+          <p className="font-display text-3xl text-offwhite">{orders.length}</p>
+        </div>
+        <div className="bg-charcoal p-6 border border-gold/20 rounded-sm">
+          <p className="text-[10px] tracking-widest2 uppercase text-stone mb-2">{t.admin_products_live}</p>
+          <p className="font-display text-3xl text-offwhite">{products.length}</p>
+        </div>
+        <div className="bg-charcoal p-6 border border-gold/20 rounded-sm">
+          <p className="text-[10px] tracking-widest2 uppercase text-stone mb-2">{t.admin_conversations}</p>
+          <p className="font-display text-3xl text-offwhite">{conversations.length}</p>
+        </div>
+      </div>
+      <div className="bg-charcoal p-6 border border-gold/20 rounded-sm">
+        <h3 className="font-display text-xl mb-4">{t.admin_recent_orders}</h3>
+        {orders.length===0 ? <p className="text-stone text-xs">{t.admin_no_orders}</p> : (
+          <div className="space-y-3">
+            {orders.slice(0,5).map((o,i) => (
+              <div key={i} className="flex justify-between items-center text-xs border-b border-gold/10 pb-2">
+                <span><strong className="text-gold">{o.id}</strong> — {o.customer?.name||'Guest'}</span>
+                <span>${o.total}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function AdminProducts({ products, setProducts, t, lang }) {
+  const [modal, setModal] = useState(false);
+  const [editItem, setEditItem] = useState(null);
+  const [form, setForm] = useState({ name:'', nameAr:'', category:'Men', price:'', stock:'', desc:'', descAr:'', sizes:'', colors:'', palette:0, img:'' });
+
+  const openAdd = () => { setEditItem(null); setForm({ name:'', nameAr:'', category:'Men', price:'', stock:'', desc:'', descAr:'', sizes:'S, M, L', colors:'Onyx', palette:0, img:'' }); setModal(true); };
+  const openEdit = (p) => { setEditItem(p); setForm({ name:p.name, nameAr:p.nameAr||p.name, category:p.category, price:p.price, stock:p.stock, desc:p.desc, descAr:p.descAr||p.desc, sizes:p.sizes.join(', '), colors:p.colors.join(', '), palette:p.palette, img:p.img||'' }); setModal(true); };
+
+  const save = () => {
+    const item = {
+      id: editItem ? editItem.id : 'p-'+Math.random().toString(36).slice(2,7),
+      art: editItem ? editItem.art : 'coat',
+      img: form.img.trim() || null,
+      name: form.name, nameAr: form.nameAr || form.name, category: form.category,
+      price: +form.price||100, stock: +form.stock||0,
+      sizes: form.sizes.split(',').map(s=>s.trim()).filter(Boolean),
+      colors: form.colors.split(',').map(c=>c.trim()).filter(Boolean),
+      palette: +form.palette, desc: form.desc, descAr: form.descAr || form.desc
+    };
+    if (editItem) setProducts(prev => prev.map(p => p.id===editItem.id ? item : p));
+    else setProducts(prev => [item, ...prev]);
+    setModal(false);
+  };
+  const del = (id) => setProducts(prev => prev.filter(p => p.id!==id));
+
+  return (
+    <div className="space-y-6 text-offwhite">
+      <div className="flex justify-between items-center">
+        <h2 className="font-display text-3xl">{t.admin_products}</h2>
+        <button onClick={openAdd} className="gold-btn px-4 py-2 text-[11px] uppercase">{t.admin_add_product}</button>
+      </div>
+      <div className="bg-charcoal border border-gold/20 rounded-sm overflow-x-auto">
+        <table className="w-full text-xs ltr:text-left rtl:text-right">
+          <thead className="border-b border-gold/20 text-stone uppercase">
+            <tr>
+              <th className="p-4">{t.admin_product}</th>
+              <th className="p-4">{t.admin_category}</th>
+              <th className="p-4">{t.admin_price}</th>
+              <th className="p-4">{t.admin_stock}</th>
+              <th className="p-4"></th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gold/10">
+            {products.map(p => (
+              <tr key={p.id}>
+                <td className="p-4 font-medium flex items-center gap-3">
+                  {p.img && <img src={p.img} alt="" className="w-8 h-10 object-cover rounded-sm border border-gold/20" />}
+                  <span>{lang==='ar'?p.nameAr:p.name}</span>
+                </td>
+                <td className="p-4 text-stone">{lang==='ar'?(CATEGORY_AR[p.category]||p.category):p.category}</td>
+                <td className="p-4 text-gold">${p.price}</td>
+                <td className="p-4">{p.stock}</td>
+                <td className="p-4 flex gap-3 justify-end">
+                  <button onClick={() => openEdit(p)} className="text-gold hover:underline">{t.admin_edit}</button>
+                  <button onClick={() => del(p.id)} className="text-stone hover:text-offwhite">{t.admin_delete}</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {modal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink/80 overflow-y-auto">
+          <div className="bg-charcoal border border-gold/30 p-6 rounded-sm w-full max-w-md space-y-3 max-h-[90vh] overflow-y-auto my-auto">
+            <h3 className="font-display text-xl">{editItem ? t.admin_edit_title : t.admin_add_title}</h3>
+            
+            {/* Category Dropdown Selector */}
+            <div>
+              <label className="block text-[11px] text-stone mb-1">{lang==='ar'?'التصنيف / القسم (رجالي / نسائي / إكسسوارات):':'Category / Section (Men / Women / Accessories):'}</label>
+              <select 
+                value={form.category || 'Men'} 
+                onChange={e => setForm({...form, category: e.target.value})} 
+                className="w-full bg-ink border border-gold/20 p-2 text-xs text-goldlight rounded-sm font-medium"
+              >
+                <option value="Men">{lang==='ar'?'رجالي (Men)':'Men'}</option>
+                <option value="Women">{lang==='ar'?'نسائي (Women)':'Women'}</option>
+                <option value="Accessories">{lang==='ar'?'إكسسوارات (Accessories)':'Accessories'}</option>
+              </select>
+            </div>
+
+            <input placeholder={t.ph_name + ' (EN)'} value={form.name} onChange={e=>setForm({...form, name:e.target.value})} className="w-full bg-ink border border-gold/20 p-2 text-xs text-offwhite rounded-sm" />
+            <input placeholder={t.ph_name + ' (AR)'} value={form.nameAr} onChange={e=>setForm({...form, nameAr:e.target.value})} className="w-full bg-ink border border-gold/20 p-2 text-xs text-offwhite rounded-sm" />
+            
+            <div className="space-y-2">
+              <label className="block text-[11px] text-stone">{lang==='ar'?'صورة المنتج (من المعرض أو الرابط):':'Product Image (from gallery or URL):'}</label>
+              
+              {/* File Upload Zone */}
+              <div 
+                onDragOver={e => e.preventDefault()}
+                onDrop={e => {
+                  e.preventDefault();
+                  const file = e.dataTransfer?.files?.[0];
+                  if (file) {
+                    const r = new FileReader();
+                    r.onload = (evt) => setForm(f => ({ ...f, img: evt.target.result }));
+                    r.readAsDataURL(file);
+                  }
+                }}
+                className="border-2 border-dashed border-gold/30 hover:border-gold p-4 text-center rounded-sm bg-ink/50 cursor-pointer transition"
+              >
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  id="gallery-file-picker" 
+                  className="hidden" 
+                  onChange={e => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const r = new FileReader();
+                      r.onload = (evt) => setForm(f => ({ ...f, img: evt.target.result }));
+                      r.readAsDataURL(file);
+                    }
+                  }} 
+                />
+                <label htmlFor="gallery-file-picker" className="cursor-pointer text-xs block text-goldlight hover:text-gold">
+                  📷 {lang==='ar'?'اضغط لاختيار صورة مباشرة من المعرض أو اسحبها هنا':'Click to upload image directly from gallery or drag & drop'}
+                </label>
+                <span className="text-[10px] text-stone block mt-1">{lang==='ar'?'(يدعم جميع صيغ الصور JPG, PNG, WEBP)':'(Supports JPG, PNG, WEBP, GIF)'}</span>
+              </div>
+
+              {/* URL fallback / direct paste */}
+              <input 
+                placeholder={t.ph_img} 
+                value={form.img} 
+                onChange={e=>setForm({...form, img:e.target.value})} 
+                className="w-full bg-ink border border-gold/20 p-2 text-xs text-offwhite font-mono rounded-sm" 
+              />
+
+              {/* Image Preview */}
+              {form.img && (
+                <div className="flex items-center gap-3 p-2 bg-ink rounded-sm border border-gold/20">
+                  <img src={form.img} alt="Preview" className="w-12 h-14 object-cover rounded-sm border border-gold/30" />
+                  <div className="flex-1 overflow-hidden">
+                    <p className="text-[10px] text-gold truncate">{lang==='ar'?'معاينة الصورة جاهزة':'Image preview ready'}</p>
+                    <button type="button" onClick={() => setForm({...form, img:''})} className="text-[10px] text-stone hover:text-offwhite underline mt-1">
+                      ✕ {lang==='ar'?'إزالة الصورة':'Remove Image'}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            <div className="grid grid-cols-2 gap-2">
+              <input placeholder={t.ph_price} type="number" value={form.price} onChange={e=>setForm({...form, price:e.target.value})} className="bg-ink border border-gold/20 p-2 text-xs text-offwhite rounded-sm" />
+              <input placeholder={t.ph_stock} type="number" value={form.stock} onChange={e=>setForm({...form, stock:e.target.value})} className="bg-ink border border-gold/20 p-2 text-xs text-offwhite rounded-sm" />
+            </div>
+
+            {/* Dual Language Description Fields */}
+            <div>
+              <label className="block text-[11px] text-stone mb-1">{lang==='ar'?'الوصف (بالعربي):':'Description (AR):'}</label>
+              <textarea 
+                placeholder={lang==='ar'?'اكتب وصف المنتج بالعربي هنا...':'Arabic Description...'} 
+                value={form.descAr || ''} 
+                onChange={e => setForm({...form, descAr: e.target.value})} 
+                className="w-full bg-ink border border-gold/20 p-2 text-xs text-offwhite h-16 rounded-sm mb-2" 
+              />
+            </div>
+            <div>
+              <label className="block text-[11px] text-stone mb-1">{lang==='ar'?'الوصف (بالإنجليزي):':'Description (EN):'}</label>
+              <textarea 
+                placeholder={lang==='ar'?'Write product description in English...':'English Description...'} 
+                value={form.desc || ''} 
+                onChange={e => setForm({...form, desc: e.target.value})} 
+                className="w-full bg-ink border border-gold/20 p-2 text-xs text-offwhite h-16 rounded-sm" 
+              />
+            </div>
+
+            <div className="flex gap-2 justify-end pt-2">
+              <button onClick={() => setModal(false)} className="px-4 py-2 border border-gold/20 text-xs rounded-sm">{t.admin_cancel}</button>
+              <button onClick={save} className="gold-btn px-4 py-2 text-xs uppercase rounded-sm">{t.admin_save_product}</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function AdminOrders({ orders, t, lang }) {
+  return (
+    <div className="space-y-6 text-offwhite">
+      <h2 className="font-display text-3xl">{t.admin_orders}</h2>
+      {orders.length===0 ? <p className="text-stone text-sm">{t.admin_no_orders_placed}</p> : (
+        <div className="space-y-4">
+          {orders.map(o => (
+            <div key={o.id} className="bg-charcoal border border-gold/20 p-5 rounded-sm text-xs space-y-4 shadow-lg">
+              <div className="flex justify-between items-center border-b border-gold/15 pb-3 font-mono text-gold">
+                <span className="font-bold text-sm">📦 {o.id}</span>
+                <span className="text-sm font-bold text-goldlight">${o.total}</span>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-stone text-[11px] bg-ink/40 p-3 rounded-sm">
+                <p><strong className="text-offwhite">{t.admin_customer}:</strong> {o.customer?.name||'Guest'}</p>
+                <p><strong className="text-offwhite">Email:</strong> {o.customer?.email||'N/A'}</p>
+                <p><strong className="text-offwhite">Phone:</strong> {o.customer?.phone||'N/A'}</p>
+                <p><strong className="text-offwhite">Address:</strong> {o.customer?.address||'N/A'}</p>
+              </div>
+              
+              <div>
+                <p className="text-gold font-medium mb-2">{lang==='ar'?'المنتجات المطلوبة في هذا الطلب:':'Ordered Products:'}</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {(o.items || []).map((item, idx) => (
+                    <div key={idx} className="flex items-center gap-3 bg-ink p-2.5 rounded-sm border border-gold/15">
+                      {item.img ? (
+                        <img src={item.img} alt="" className="w-12 h-14 object-cover rounded-sm border border-gold/30 shrink-0" />
+                      ) : (
+                        <div className="w-12 h-14 bg-charcoal flex items-center justify-center text-stone rounded-sm shrink-0">🛍️</div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-offwhite truncate text-xs">{lang==='ar' ? (item.nameAr||item.name) : item.name}</p>
+                        <p className="text-[10px] text-stone mt-0.5">
+                          {item.size && <span>Size: {item.size} </span>}
+                          {item.color && <span>| Color: {item.color} </span>}
+                        </p>
+                        <p className="text-gold text-xs mt-1 font-mono">${item.price} × {item.qty} = <span className="font-bold">${(item.price * item.qty).toLocaleString()}</span></p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function AdminTheme({ theme, setTheme, collections, setCollections, t, lang }) {
+  const [form, setForm] = useState(theme);
+  const [colls, setColls] = useState(collections || []);
+
+  const save = () => {
+    setTheme(form);
+    if (setCollections) setCollections(colls);
+    alert(lang==='ar' ? 'تم حفظ التغييرات بنجاح!' : 'Theme and collections saved successfully!');
+  };
+
+  const updateColl = (idx, key, val) => {
+    setColls(prev => prev.map((c, i) => i === idx ? { ...c, [key]: val } : c));
+  };
+
+  return (
+    <div className="space-y-8 text-offwhite max-w-2xl">
+      <h2 className="font-display text-3xl">{t.theme_title}</h2>
+      
+      {/* 1. Hero Text & Settings */}
+      <div className="bg-charcoal border border-gold/20 p-6 rounded-sm space-y-4 text-xs">
+        <h3 className="font-display text-xl text-gold">{lang==='ar'?'إعدادات واجهة الصفحة الرئيسية (Hero)':'Hero Section Settings'}</h3>
+        
+        <div>
+          <label className="text-stone block mb-1">{t.theme_eyebrow}</label>
+          <input value={form.heroEyebrow||''} onChange={e=>setForm({...form, heroEyebrow:e.target.value})} className="w-full bg-ink border border-gold/20 p-2 text-offwhite rounded-sm" />
+        </div>
+        <div>
+          <label className="text-stone block mb-1">{t.theme_title_field}</label>
+          <textarea value={form.heroTitle||''} onChange={e=>setForm({...form, heroTitle:e.target.value})} className="w-full bg-ink border border-gold/20 p-2 text-offwhite h-16 rounded-sm" />
+        </div>
+        <div>
+          <label className="text-stone block mb-1">{t.theme_sub}</label>
+          <textarea value={form.heroSubtitle||''} onChange={e=>setForm({...form, heroSubtitle:e.target.value})} className="w-full bg-ink border border-gold/20 p-2 text-offwhite h-16 rounded-sm" />
+        </div>
+        <div>
+          <label className="text-stone block mb-1">{t.theme_cta}</label>
+          <input value={form.heroCta||''} onChange={e=>setForm({...form, heroCta:e.target.value})} className="w-full bg-ink border border-gold/20 p-2 text-offwhite rounded-sm" />
+        </div>
+
+        {/* Hero Background Image Picker */}
+        <div className="space-y-2 pt-2 border-t border-gold/10">
+          <label className="text-stone block font-medium">{lang==='ar'?'صورة خلفية الواجهة الرئيسية (تظهر خلف المجسم 3D):':'Hero Background Image (renders behind 3D jewel):'}</label>
+          <div 
+            onDragOver={e => e.preventDefault()}
+            onDrop={e => {
+              e.preventDefault();
+              const file = e.dataTransfer?.files?.[0];
+              if (file) {
+                const r = new FileReader();
+                r.onload = (evt) => setForm(f => ({ ...f, heroImage: evt.target.result }));
+                r.readAsDataURL(file);
+              }
+            }}
+            className="border-2 border-dashed border-gold/30 hover:border-gold p-3 text-center rounded-sm bg-ink/50 cursor-pointer transition"
+          >
+            <input 
+              type="file" 
+              accept="image/*" 
+              id="hero-file-picker" 
+              className="hidden" 
+              onChange={e => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  const r = new FileReader();
+                  r.onload = (evt) => setForm(f => ({ ...f, heroImage: evt.target.result }));
+                  r.readAsDataURL(file);
+                }
+              }} 
+            />
+            <label htmlFor="hero-file-picker" className="cursor-pointer text-xs block text-goldlight hover:text-gold">
+              📷 {lang==='ar'?'اضغط لاختيار صورة خلفية الهيرو من المعرض أو اسحبها هنا':'Click to upload Hero background image from gallery or drag & drop'}
+            </label>
+          </div>
+          <input 
+            placeholder={lang==='ar'?'أو ضع رابط صورة الخلفية (URL)':'OR paste image URL below'}
+            value={form.heroImage||''} 
+            onChange={e=>setForm({...form, heroImage:e.target.value})} 
+            className="w-full bg-ink border border-gold/20 p-2 text-xs text-offwhite font-mono rounded-sm" 
+          />
+          {form.heroImage && (
+            <div className="flex items-center gap-3 p-2 bg-ink rounded-sm border border-gold/20">
+              <img src={form.heroImage} alt="Hero Preview" className="w-16 h-12 object-cover rounded-sm border border-gold/30" />
+              <div className="flex-1">
+                <p className="text-[10px] text-gold">{lang==='ar'?'معاينة خلفية الهيرو جاهزة':'Hero background preview ready'}</p>
+                <button type="button" onClick={() => setForm({...form, heroImage:null})} className="text-[10px] text-stone hover:text-offwhite underline mt-1">
+                  ✕ {lang==='ar'?'إزالة خلفية الهيرو':'Remove Hero Background'}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div>
+          <label className="text-stone block mb-1">{t.theme_webhook}</label>
+          <input placeholder={t.theme_webhook_ph} value={form.webhookUrl||''} onChange={e=>setForm({...form, webhookUrl:e.target.value})} className="w-full bg-ink border border-gold/20 p-2 text-offwhite font-mono rounded-sm" />
+          <p className="text-[10px] text-stone mt-1">{t.theme_webhook_note}</p>
+        </div>
+      </div>
+
+      {/* 2. Featured Seasonal Collections Manager */}
+      <div className="bg-charcoal border border-gold/20 p-6 rounded-sm space-y-4 text-xs">
+        <div className="flex flex-wrap justify-between items-center gap-3">
+          <div>
+            <h3 className="font-display text-xl text-gold">{lang==='ar'?'إدارة كروت المجموعات (Curated Collections)':'Curated Collections Manager'}</h3>
+            <p className="text-stone text-[11px] mt-0.5">{lang==='ar'?'التحكم الكامل بكروت المجموعات: إضافة كروت جديدة، تعديل الصورة، الاسم، والتصنيف (رجالي/نسائي/إكسسوارات):':'Full control over collection cards: Add new cards, edit images, names, and tags (Men/Women/Accessories):'}</p>
+          </div>
+          <button 
+            type="button" 
+            onClick={() => {
+              const newCard = {
+                id: 'c-' + Math.random().toString(36).slice(2, 7),
+                name: 'New Collection',
+                nameAr: 'مجموعة جديدة',
+                tag: 'Men',
+                tagAr: 'رجالي',
+                palette: 0,
+                art: 'coat',
+                img: ''
+              };
+              setColls(prev => [...prev, newCard]);
+            }}
+            className="gold-btn px-4 py-2 text-[11px] uppercase font-medium flex items-center gap-1.5"
+          >
+            ➕ {lang==='ar' ? 'إضافة كرت مجموعة جديد' : 'Add New Collection Card'}
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+          {colls.map((c, idx) => (
+            <div key={c.id || idx} className="bg-ink border border-gold/20 p-4 rounded-sm space-y-3 relative group">
+              <div className="flex justify-between items-center border-b border-gold/10 pb-2">
+                <span className="font-medium text-gold text-xs">
+                  {lang==='ar' ? `كرت #${idx+1}: ${c.nameAr||c.name}` : `Card #${idx+1}: ${c.name}`}
+                </span>
+                <button 
+                  type="button"
+                  onClick={() => setColls(prev => prev.filter((_, i) => i !== idx))}
+                  className="text-stone hover:text-red-400 text-[11px] transition font-mono px-2 py-0.5 rounded border border-transparent hover:border-red-400/30"
+                  title={lang==='ar'?'حذف الكرت':'Delete Card'}
+                >
+                  ✕ {lang==='ar'?'حذف الكرت':'Delete Card'}
+                </button>
+              </div>
+              
+              {/* Category / Tag Selectors */}
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="text-[10px] text-stone block mb-1">{lang==='ar'?'التصنيف / الفئة (عربي):':'Category Tag (AR):'}</label>
+                  <select 
+                    value={c.tagAr || 'رجالي'} 
+                    onChange={e => {
+                      const arVal = e.target.value;
+                      const enMap = { 'رجالي':'Men', 'نسائي':'Women', 'إكسسوارات':'Accessories', 'للجنسين':'Unisex' };
+                      updateColl(idx, 'tagAr', arVal);
+                      updateColl(idx, 'tag', enMap[arVal] || 'Men');
+                    }}
+                    className="w-full bg-charcoal border border-gold/20 p-1.5 text-xs text-goldlight rounded-sm"
+                  >
+                    <option value="رجالي">رجالي (Men)</option>
+                    <option value="نسائي">نسائي (Women)</option>
+                    <option value="إكسسوارات">إكسسوارات (Accessories)</option>
+                    <option value="للجنسين">للجنسين (Unisex)</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-[10px] text-stone block mb-1">{lang==='ar'?'التصنيف (إنجليزي):':'Category Tag (EN):'}</label>
+                  <input 
+                    placeholder="e.g. Men / Women / Unisex"
+                    value={c.tag||''} 
+                    onChange={e=>updateColl(idx, 'tag', e.target.value)} 
+                    className="w-full bg-charcoal border border-gold/20 p-1.5 text-xs text-offwhite rounded-sm" 
+                  />
+                </div>
+              </div>
+
+              {/* Title Inputs */}
+              <div>
+                <label className="text-[10px] text-stone block mb-1">{lang==='ar'?'عنوان الكرت (عربي):':'Card Title (AR):'}</label>
+                <input 
+                  placeholder={lang==='ar'?'مثال: كنزات ومعاطف فخمة':'e.g. Luxury Knitwear'}
+                  value={c.nameAr||''} 
+                  onChange={e=>updateColl(idx, 'nameAr', e.target.value)} 
+                  className="w-full bg-charcoal border border-gold/20 p-2 text-xs text-offwhite rounded-sm" 
+                />
+              </div>
+
+              <div>
+                <label className="text-[10px] text-stone block mb-1">{lang==='ar'?'عنوان الكرت (إنجليزي):':'Card Title (EN):'}</label>
+                <input 
+                  placeholder={lang==='ar'?'مثال: Luxury Knitwear':'e.g. Luxury Knitwear'}
+                  value={c.name||''} 
+                  onChange={e=>updateColl(idx, 'name', e.target.value)} 
+                  className="w-full bg-charcoal border border-gold/20 p-2 text-xs text-offwhite rounded-sm" 
+                />
+              </div>
+
+              {/* Collection Image Upload */}
+              <div className="space-y-1 pt-1">
+                <label className="text-[10px] text-stone block">{lang==='ar'?'صورة الكرت (من المعرض أو الرابط):':'Card Image (Gallery or URL):'}</label>
+                <div 
+                  onDragOver={e => e.preventDefault()}
+                  onDrop={e => {
+                    e.preventDefault();
+                    const file = e.dataTransfer?.files?.[0];
+                    if (file) {
+                      const r = new FileReader();
+                      r.onload = (evt) => updateColl(idx, 'img', evt.target.result);
+                      r.readAsDataURL(file);
+                    }
+                  }}
+                  className="border border-dashed border-gold/30 hover:border-gold p-2 text-center rounded-sm bg-charcoal/50 cursor-pointer transition"
+                >
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    id={`coll-file-picker-${idx}`} 
+                    className="hidden" 
+                    onChange={e => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const r = new FileReader();
+                        r.onload = (evt) => updateColl(idx, 'img', evt.target.result);
+                        r.readAsDataURL(file);
+                      }
+                    }} 
+                  />
+                  <label htmlFor={`coll-file-picker-${idx}`} className="cursor-pointer text-[11px] block text-goldlight hover:text-gold">
+                    📷 {lang==='ar'?'اختر صورة الكرت مباشرة من المعرض':'Choose image from gallery'}
+                  </label>
+                </div>
+
+                <input 
+                  placeholder={lang==='ar'?'أو ضع رابط صورة بنترست / إنترنت':'OR paste image URL'}
+                  value={c.img||''} 
+                  onChange={e=>updateColl(idx, 'img', e.target.value)} 
+                  className="w-full bg-charcoal border border-gold/20 p-1.5 text-[10px] text-offwhite font-mono rounded-sm" 
+                />
+
+                {c.img && (
+                  <div className="flex items-center gap-3 pt-1 p-1 bg-charcoal/80 rounded-sm border border-gold/15">
+                    <img src={c.img} alt="" className="w-10 h-12 object-cover rounded-sm border border-gold/30" />
+                    <div className="flex-1">
+                      <span className="text-[10px] text-gold block">{lang==='ar'?'الصورة جاهزة':'Image set'}</span>
+                      <button type="button" onClick={() => updateColl(idx, 'img', null)} className="text-[10px] text-stone hover:text-offwhite underline">
+                        ✕ {lang==='ar'?'إزالة':'Remove'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 3. Supabase Cloud Database Manager */}
+      <div className="bg-charcoal border border-gold/20 p-6 rounded-sm space-y-4 text-xs">
+        <div className="flex items-center gap-2">
+          <span className="text-xl">⚡</span>
+          <h3 className="font-display text-xl text-gold">{lang==='ar'?'ربط قاعدة بيانات سوبابيس (Supabase Database Connection)':'Supabase Database Integration'}</h3>
+        </div>
+        <p className="text-stone text-[11px] leading-relaxed">
+          {lang==='ar'
+            ?'ضع رابط وتوكن سوبابيس (Supabase URL & Anon Key) لحفظ كل المنتجات والبيانات بشكل دائم وحقيقي في قاعدة بيانات سحابية وتحديثها فورياً عبر جميع الجوالات واللابتوبات:'
+            :'Enter your Supabase URL & Anon Key to persist all products and store data in real-time PostgreSQL database across all devices:'}
+        </p>
+
+        <div className="space-y-3">
+          <div>
+            <label className="text-gold block mb-1 font-mono">SUPABASE_URL:</label>
+            <input 
+              placeholder="https://your-project.supabase.co"
+              value={form.supabaseUrl || ''} 
+              onChange={e => setForm({ ...form, supabaseUrl: e.target.value })} 
+              className="w-full bg-ink border border-gold/20 p-2 text-xs text-offwhite font-mono rounded-sm"
+            />
+          </div>
+
+          <div>
+            <label className="text-gold block mb-1 font-mono">SUPABASE_ANON_KEY:</label>
+            <input 
+              placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+              value={form.supabaseKey || ''} 
+              onChange={e => setForm({ ...form, supabaseKey: e.target.value })} 
+              className="w-full bg-ink border border-gold/20 p-2 text-xs text-offwhite font-mono rounded-sm"
+            />
+          </div>
+
+          <div className="p-3 bg-ink rounded-sm border border-gold/20 flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-2 text-xs">
+              <span className={`w-3 h-3 rounded-full ${form.supabaseUrl ? 'bg-green-500 animate-pulse' : 'bg-green-500 animate-pulse'} inline-block`}></span>
+              <span className="text-gold">
+                {form.supabaseUrl 
+                  ? (lang==='ar'?'متصل بقاعدة بيانات سوبابيس الحية ⚡':'Connected to Supabase Cloud Database ⚡')
+                  : (lang==='ar'?'قاعدة البيانات السحابية الحية مفعّلة (تتحدث فوريًا بين الجوال والكمبيوتر)':'Live Cloud Database Active (Syncs instantly between Mobile & Desktop)')}
+              </span>
+            </div>
+            <button 
+              type="button" 
+              onClick={() => {
+                if (window.cloudSyncTrigger) window.cloudSyncTrigger();
+                alert(lang==='ar'?'تم فحص ومزامنة البيانات مع قاعدة البيانات بنجاح!':'Database sync executed successfully!');
+              }}
+              className="px-3 py-1.5 bg-gold/20 hover:bg-gold text-gold hover:text-ink border border-gold/30 rounded-sm text-[11px] transition"
+            >
+              🔄 {lang==='ar'?'تحديث وتوصيل البيانات الآن':'Sync & Test Connection'}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* 4. Brand Story Stats Manager */}
+      <div className="bg-charcoal border border-gold/20 p-6 rounded-sm space-y-4 text-xs">
+        <h3 className="font-display text-xl text-gold">{lang==='ar'?'إدارة إحصائيات قسم "قصتنا" (Brand Story Stats)':'Brand Story Stats Manager'}</h3>
+        <p className="text-stone text-[11px]">{lang==='ar'?'عدّل الأرقام والنصوص الظاهرة في قسم القصة (مثلاً: 27 سنة في المشغل):':'Edit stat numbers and labels shown in the Story section (e.g. 27 Years in Atelier):'}</p>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {[1, 2, 3, 4].map(idx => (
+            <div key={idx} className="bg-ink border border-gold/20 p-3 rounded-sm space-y-2">
+              <p className="font-medium text-gold">{lang==='ar' ? `إحصائية #${idx}` : `Stat #${idx}`}</p>
+              <input 
+                placeholder={lang==='ar'?'الرقم (مثال: 27)':'Number (e.g. 27)'}
+                value={form[`stat${idx}Num`] || ''}
+                onChange={e => setForm({...form, [`stat${idx}Num`]: e.target.value})}
+                className="w-full bg-charcoal border border-gold/20 p-2 text-xs text-goldlight rounded-sm font-mono"
+              />
+              <input 
+                placeholder={lang==='ar'?'النص التوضيحي (عربي)':'Label (AR)'}
+                value={form[`stat${idx}LabelAr`] || ''}
+                onChange={e => setForm({...form, [`stat${idx}LabelAr`]: e.target.value})}
+                className="w-full bg-charcoal border border-gold/20 p-2 text-xs text-offwhite rounded-sm"
+              />
+              <input 
+                placeholder={lang==='ar'?'النص التوضيحي (إنجليزي)':'Label (EN)'}
+                value={form[`stat${idx}Label`] || ''}
+                onChange={e => setForm({...form, [`stat${idx}Label`]: e.target.value})}
+                className="w-full bg-charcoal border border-gold/20 p-2 text-xs text-offwhite rounded-sm"
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 5. Footer Information Pages & Policies Content Manager */}
+      <div className="bg-charcoal border border-gold/20 p-6 rounded-sm space-y-4 text-xs">
+        <h3 className="font-display text-xl text-gold">{lang==='ar'?'إدارة صفحات المحتوى وسياسات الفوتر (الشحن، الإرجاع، التواصل، المشاغل)':'Footer Pages & Policies Content Manager'}</h3>
+        <p className="text-stone text-[11px]">{lang==='ar'?'اكتب تفاصيل الشحن، الإرجاع، بيانات التواصل، والمشاغل لتظهر للزبون عند الضغط عليها بالفوتر:':'Write details for shipping, returns, contact, story, ateliers, and sustainability to display when clicked in footer:'}</p>
+
+        <div className="space-y-4">
+          <div>
+            <label className="text-gold block mb-1">🚚 {lang==='ar'?'نص الشحن والتوصيل (عربي & EN):':'Shipping & Delivery Text:'}</label>
+            <textarea value={form.shippingInfoAr||''} onChange={e=>setForm({...form, shippingInfoAr:e.target.value})} className="w-full bg-ink border border-gold/20 p-2 text-xs text-offwhite h-20 rounded-sm mb-2" placeholder="الشحن والتوصيل بالعربي..." />
+            <textarea value={form.shippingInfo||''} onChange={e=>setForm({...form, shippingInfo:e.target.value})} className="w-full bg-ink border border-gold/20 p-2 text-xs text-offwhite h-20 rounded-sm" placeholder="Shipping Info in English..." />
+          </div>
+
+          <div>
+            <label className="text-gold block mb-1">↩️ {lang==='ar'?'سياسة الإرجاع والاستبدال (عربي & EN):':'Returns & Exchanges Text:'}</label>
+            <textarea value={form.returnsInfoAr||''} onChange={e=>setForm({...form, returnsInfoAr:e.target.value})} className="w-full bg-ink border border-gold/20 p-2 text-xs text-offwhite h-20 rounded-sm mb-2" placeholder="سياسة الإرجاع بالعربي..." />
+            <textarea value={form.returnsInfo||''} onChange={e=>setForm({...form, returnsInfo:e.target.value})} className="w-full bg-ink border border-gold/20 p-2 text-xs text-offwhite h-20 rounded-sm" placeholder="Returns Policy in English..." />
+          </div>
+
+          <div>
+            <label className="text-gold block mb-1">💬 {lang==='ar'?'بيانات التواصل والخدمة (عربي & EN):':'Contact & Concierge Text:'}</label>
+            <textarea value={form.contactInfoAr||''} onChange={e=>setForm({...form, contactInfoAr:e.target.value})} className="w-full bg-ink border border-gold/20 p-2 text-xs text-offwhite h-20 rounded-sm mb-2" placeholder="بيانات التواصل (الواتساب، البريد، أوقات العمل)..." />
+            <textarea value={form.contactInfo||''} onChange={e=>setForm({...form, contactInfo:e.target.value})} className="w-full bg-ink border border-gold/20 p-2 text-xs text-offwhite h-20 rounded-sm" placeholder="Contact Details in English..." />
+          </div>
+
+          <div>
+            <label className="text-gold block mb-1">📜 {lang==='ar'?'قصتنا (عربي & EN):':'Our Story Text:'}</label>
+            <textarea value={form.ourStoryInfoAr||''} onChange={e=>setForm({...form, ourStoryInfoAr:e.target.value})} className="w-full bg-ink border border-gold/20 p-2 text-xs text-offwhite h-20 rounded-sm mb-2" placeholder="نص قصتنا بالعربي..." />
+            <textarea value={form.ourStoryInfo||''} onChange={e=>setForm({...form, ourStoryInfo:e.target.value})} className="w-full bg-ink border border-gold/20 p-2 text-xs text-offwhite h-20 rounded-sm" placeholder="Our Story in English..." />
+          </div>
+
+          <div>
+            <label className="text-gold block mb-1">✂️ {lang==='ar'?'تفاصيل المشاغل والحرفية (عربي & EN):':'Ateliers & Craftsmanship Text:'}</label>
+            <textarea value={form.ateliersInfoAr||''} onChange={e=>setForm({...form, ateliersInfoAr:e.target.value})} className="w-full bg-ink border border-gold/20 p-2 text-xs text-offwhite h-20 rounded-sm mb-2" placeholder="تفاصيل المشاغل بالعربي..." />
+            <textarea value={form.ateliersInfo||''} onChange={e=>setForm({...form, ateliersInfo:e.target.value})} className="w-full bg-ink border border-gold/20 p-2 text-xs text-offwhite h-20 rounded-sm" placeholder="Ateliers Info in English..." />
+          </div>
+
+          <div>
+            <label className="text-gold block mb-1">🌿 {lang==='ar'?'التزام الاستدامة (عربي & EN):':'Sustainability Text:'}</label>
+            <textarea value={form.sustainabilityInfoAr||''} onChange={e=>setForm({...form, sustainabilityInfoAr:e.target.value})} className="w-full bg-ink border border-gold/20 p-2 text-xs text-offwhite h-20 rounded-sm mb-2" placeholder="تفاصيل الاستدامة بالعربي..." />
+            <textarea value={form.sustainabilityInfo||''} onChange={e=>setForm({...form, sustainabilityInfo:e.target.value})} className="w-full bg-ink border border-gold/20 p-2 text-xs text-offwhite h-20 rounded-sm" placeholder="Sustainability Info in English..." />
+          </div>
+        </div>
+      </div>
+
+      <button onClick={save} className="gold-btn w-full py-4 uppercase tracking-widest text-xs font-medium">{t.theme_save}</button>
+    </div>
+  );
+}
+
+function AdminChat({ conversations, setConversations, emit, webhookUrl, t }) {
+  const [active, setActive] = useState(conversations[0]?.id || null);
+  const [reply, setReply] = useState('');
+  const activeConv = conversations.find(c => c.id === active);
+
+  const send = () => {
+    if (!reply.trim() || !active) return;
+    const msg = { from:'admin', text: reply.trim(), ts: Date.now() };
+    setConversations(prev => {
+      const next = prev.map(c => c.id===active ? {...c, messages:[...c.messages, msg]} : c);
+      saveLS(LS_KEYS.conversations, next);
+      return next;
+    });
+    emit('message.created', { conversationId: active, from:'admin', text: msg.text }, webhookUrl);
+    setReply('');
+    setTimeout(() => { if (window.cloudSyncTrigger) window.cloudSyncTrigger(); }, 50);
+  };
+
+  return (
+    <div className="space-y-6 text-offwhite">
+      <h2 className="font-display text-3xl">{t.admin_chat}</h2>
+      <div className="grid grid-cols-1 md:grid-cols-3 bg-charcoal border border-gold/20 rounded-sm h-[480px]">
+        <div className="border-r border-gold/10 overflow-y-auto p-3 space-y-2">
+          {conversations.length===0 ? <p className="text-stone text-xs">{t.chatcenter_none}</p> : conversations.map(c => (
+            <button key={c.id} onClick={() => setActive(c.id)} className={`w-full p-3 text-left ltr:text-left rtl:text-right rounded-sm border ${c.id===active ? 'bg-ink border-gold' : 'border-gold/10'}`}>
+              <p className="font-medium text-xs text-offwhite">{c.customerName}</p>
+              <p className="text-[10px] text-stone truncate">{c.messages[c.messages.length-1]?.text}</p>
+            </button>
+          ))}
+        </div>
+        <div className="md:col-span-2 flex flex-col h-full bg-ink p-4">
+          {activeConv ? (
+            <>
+              <div className="flex-1 overflow-y-auto space-y-3 pr-2">
+                {activeConv.messages.map((m,i) => (
+                  <div key={i} className={`flex ${m.from==='admin' ? 'justify-end' : 'justify-start'}`}>
+                    <div className={`max-w-[75%] px-3 py-2 rounded-sm text-xs ${m.from==='admin' ? 'bg-gold text-ink' : 'bg-charcoal text-offwhite border border-gold/20'}`}>{m.text}</div>
+                  </div>
+                ))}
+              </div>
+              <div className="flex gap-2 pt-3 border-t border-gold/10">
+                <input value={reply} onChange={e=>setReply(e.target.value)} onKeyDown={e=>e.key==='Enter'&&send()} placeholder={t.chatcenter_reply_ph} className="flex-1 bg-charcoal border border-gold/20 p-2 text-xs text-offwhite" />
+                <button onClick={send} className="gold-btn px-4 text-xs uppercase">{t.chatcenter_send}</button>
+              </div>
+            </>
+          ) : <div className="flex-1 flex items-center justify-center text-stone text-xs">{t.chatcenter_select}</div>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AdminWebhooks({ log, t, webhookUrl }) {
+  return (
+    <div className="space-y-6 text-offwhite">
+      <div>
+        <h2 className="font-display text-3xl mb-2">{t.webhook_title}</h2>
+        <p className="text-xs text-stone max-w-xl leading-relaxed mb-4">{t.webhook_desc}</p>
+        <p className="text-xs font-mono text-gold">{webhookUrl ? `${t.webhook_armed} ${webhookUrl}` : t.webhook_none}</p>
+      </div>
+      <div className="bg-charcoal border border-gold/20 rounded-sm p-4 text-xs font-mono max-h-[400px] overflow-y-auto space-y-3">
+        {log.length===0 ? <p className="text-stone">{t.webhook_empty}</p> : log.map((evt,i) => (
+          <div key={i} className="border-b border-gold/10 pb-2 space-y-1">
+            <div className="flex justify-between text-gold"><span>{evt.event}</span><span>{new Date(evt.ts).toLocaleTimeString()}</span></div>
+            <p className="text-[10px] text-stone">{JSON.stringify(evt.payload)}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function AdminDashboard({ products, setProducts, orders, setOrders, theme, setTheme, collections, setCollections, conversations, setConversations, log, emit, onExit, t, lang }) {
+  const [tab, setTab] = useState('overview');
+  return (
+    <div className="bg-ink min-h-screen text-offwhite flex flex-col md:flex-row">
+      <AdminSidebar tab={tab} setTab={setTab} onExit={onExit} t={t} />
+      <main className="flex-1 p-6 md:p-12 overflow-y-auto">
+        {tab === 'overview' && <AdminOverview products={products} orders={orders} conversations={conversations} t={t} />}
+        {tab === 'products' && <AdminProducts products={products} setProducts={setProducts} t={t} lang={lang} />}
+        {tab === 'orders' && <AdminOrders orders={orders} t={t} lang={lang} />}
+        {tab === 'theme' && <AdminTheme theme={theme} setTheme={setTheme} collections={collections} setCollections={setCollections} t={t} lang={lang} />}
+        {tab === 'chat' && <AdminChat conversations={conversations} setConversations={setConversations} emit={emit} webhookUrl={theme.webhookUrl} t={t} />}
+        {tab === 'webhooks' && <AdminWebhooks log={log} t={t} webhookUrl={theme.webhookUrl} />}
+      </main>
+    </div>
+  );
+}
+
+/* ===========================================================
+   ROOT APP
+=========================================================== */
+function App() {
+  const [view, setView] = useState(() => loadLS(LS_KEYS.view, 'storefront'));
+  const [lang, setLang] = useState(() => loadLS(LS_KEYS.lang, 'en'));
+  const [dark, setDark] = useState(() => loadLS(LS_KEYS.dark, false));
+
+  const [products, setProducts] = useState(() => {
+    const loaded = loadLS(LS_KEYS.products, null);
+    if (!loaded || !Array.isArray(loaded) || loaded.length === 0) {
+      return SEED_PRODUCTS;
+    }
+    // Retain ALL user custom uploaded image data, price, titles, and custom products
+    return loaded.map(p => {
+      const seed = SEED_PRODUCTS.find(sp => sp.id === p.id);
+      return { ...seed, ...p, img: p.img || seed?.img || '' };
+    });
+  });
+
+  const [collections, setCollections] = useState(() => loadLS(LS_KEYS.collections, SEED_COLLECTIONS));
+  const [orders, setOrders] = useState(() => loadLS(LS_KEYS.orders, []));
+  const [conversations, setConversations] = useState(() => loadLS(LS_KEYS.conversations, SEED_CONVERSATIONS));
+  const [theme, setTheme] = useState(() => {
+    const loaded = loadLS(LS_KEYS.theme, null);
+    return loaded ? { ...SEED_THEME, ...loaded } : SEED_THEME;
+  });
+  const [cart, setCart] = useState(() => loadLS(LS_KEYS.cart, []));
+
+  const { log, emit } = useWebhookLog();
+  const t = I18N[lang] || I18N.en;
+
+  const isRemoteUpdateRef = useRef(false);
+
+  // Real-Time Cloud Database & Supabase Sync Handler (Orders, Chat, Products, Collections, Theme)
+  const syncToCloud = useCallback((payload) => {
+    try {
+      const fullPayload = { ...payload, ts: Date.now() };
+      if (theme?.supabaseUrl && theme?.supabaseKey && window.supabase) {
+        const sb = window.supabase.createClient(theme.supabaseUrl, theme.supabaseKey);
+        sb.from('store_state').upsert({ id: 'main_store', payload: fullPayload, updated_at: new Date() }).then(() => {}).catch(() => {});
+      }
+      
+      const url = theme?.cloudSyncUrl || 'https://api.myjson.online/v1/records/maison_noir_db';
+      fetch(url, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(fullPayload)
+      }).catch(() => {});
+    } catch(e) {}
+  }, [theme?.supabaseUrl, theme?.supabaseKey, theme?.cloudSyncUrl]);
+
+  // Function to pull and merge latest Orders, Chat Messages, Products, Collections, and Theme from Cloud / Supabase
+  const pullCloudData = useCallback(() => {
+    try {
+      const applyData = (data) => {
+        if (!data || typeof data !== 'object') return;
+        isRemoteUpdateRef.current = true;
+
+        if (Array.isArray(data.products) && data.products.length > 0) {
+          setProducts(data.products);
+          saveLS(LS_KEYS.products, data.products);
+        }
+        if (Array.isArray(data.collections) && data.collections.length > 0) {
+          setCollections(data.collections);
+          saveLS(LS_KEYS.collections, data.collections);
+        }
+        if (Array.isArray(data.orders)) {
+          setOrders(prev => {
+            const map = new Map();
+            (prev || []).forEach(o => map.set(o.id, o));
+            (data.orders || []).forEach(o => map.set(o.id, o));
+            const merged = Array.from(map.values());
+            saveLS(LS_KEYS.orders, merged);
+            return merged;
+          });
+        }
+        if (Array.isArray(data.conversations) && data.conversations.length > 0) {
+          setConversations(prev => {
+            const map = new Map();
+            (prev || []).forEach(c => map.set(c.id, c));
+            (data.conversations || []).forEach(c => {
+              const existing = map.get(c.id);
+              if (!existing) {
+                map.set(c.id, c);
+              } else {
+                const msgMap = new Map();
+                (existing.messages || []).forEach(m => msgMap.set(`${m.from}_${m.ts}`, m));
+                (c.messages || []).forEach(m => msgMap.set(`${m.from}_${m.ts}`, m));
+                const sortedMsgs = Array.from(msgMap.values()).sort((a,b) => a.ts - b.ts);
+                map.set(c.id, { ...existing, ...c, messages: sortedMsgs });
+              }
+            });
+            const merged = Array.from(map.values());
+            saveLS(LS_KEYS.conversations, merged);
+            return merged;
+          });
+        }
+        if (data.theme) {
+          setTheme(prev => {
+            const next = { ...prev, ...data.theme };
+            saveLS(LS_KEYS.theme, next);
+            return next;
+          });
+        }
+
+        setTimeout(() => { isRemoteUpdateRef.current = false; }, 300);
+      };
+
+      if (theme?.supabaseUrl && theme?.supabaseKey && window.supabase) {
+        const sb = window.supabase.createClient(theme.supabaseUrl, theme.supabaseKey);
+        sb.from('store_state').select('*').eq('id', 'main_store').single().then(res => {
+          if (res && res.data && res.data.payload) {
+            applyData(res.data.payload);
+          }
+        }).catch(() => {});
+      } else {
+        const url = theme?.cloudSyncUrl || 'https://api.myjson.online/v1/records/maison_noir_db';
+        fetch(url)
+          .then(r => r.ok ? r.json() : null)
+          .then(data => applyData(data))
+          .catch(() => {});
+      }
+    } catch(e) {}
+  }, [theme?.supabaseUrl, theme?.supabaseKey, theme?.cloudSyncUrl]);
+
+  // Pull latest data on mount & subscribe to Supabase Realtime changes
+  useEffect(() => {
+    pullCloudData();
+    const timer = setInterval(() => {
+      pullCloudData();
+    }, 3000);
+
+    let channel = null;
+    if (theme?.supabaseUrl && theme?.supabaseKey && window.supabase) {
+      try {
+        const sb = window.supabase.createClient(theme.supabaseUrl, theme.supabaseKey);
+        channel = sb.channel('public:store_state')
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'store_state' }, () => {
+            pullCloudData();
+          })
+          .subscribe();
+      } catch(e) {}
+    }
+
+    return () => {
+      clearInterval(timer);
+      if (channel && window.supabase) {
+        try { channel.unsubscribe(); } catch(e) {}
+      }
+    };
+  }, [pullCloudData, theme?.supabaseUrl, theme?.supabaseKey]);
+
+  window.cloudSyncTrigger = () => {
+    syncToCloud({ products, collections, theme, orders, conversations });
+  };
+
+  useEffect(() => saveLS(LS_KEYS.view, view), [view]);
+
+  useEffect(() => {
+    saveLS(LS_KEYS.lang, lang);
+    document.documentElement.dir = t.dir;
+    document.documentElement.lang = lang;
+  }, [lang, t]);
+
+  useEffect(() => {
+    saveLS(LS_KEYS.dark, dark);
+    if (dark) document.documentElement.classList.add('dark');
+    else document.documentElement.classList.remove('dark');
+  }, [dark]);
+
+  useEffect(() => {
+    saveLS(LS_KEYS.products, products);
+    if (!isRemoteUpdateRef.current) syncToCloud({ products, collections, theme, orders, conversations });
+  }, [products]);
+
+  useEffect(() => {
+    saveLS(LS_KEYS.collections, collections);
+    if (!isRemoteUpdateRef.current) syncToCloud({ products, collections, theme, orders, conversations });
+  }, [collections]);
+
+  useEffect(() => {
+    saveLS(LS_KEYS.orders, orders);
+    if (!isRemoteUpdateRef.current) syncToCloud({ products, collections, theme, orders, conversations });
+  }, [orders]);
+
+  useEffect(() => {
+    saveLS(LS_KEYS.conversations, conversations);
+    if (!isRemoteUpdateRef.current) syncToCloud({ products, collections, theme, orders, conversations });
+  }, [conversations]);
+
+  useEffect(() => {
+    saveLS(LS_KEYS.theme, theme);
+    if (!isRemoteUpdateRef.current) syncToCloud({ products, collections, theme, orders, conversations });
+  }, [theme]);
+
+  useEffect(() => saveLS(LS_KEYS.cart, cart), [cart]);
+
+  return (
+    <div>
+      {view === 'storefront' && (
+        <Storefront products={products} theme={theme} collections={collections} cart={cart} setCart={setCart} orders={orders} setOrders={setOrders} conversations={conversations} setConversations={setConversations} emit={emit} onGoAdmin={() => setView('adminLogin')} t={t} lang={lang} setLang={setLang} dark={dark} setDark={setDark} />
+      )}
+      {view === 'adminLogin' && (
+        <AdminLogin onSuccess={() => setView('adminDashboard')} onBack={() => setView('storefront')} t={t} />
+      )}
+      {view === 'adminDashboard' && (
+        <AdminDashboard products={products} setProducts={setProducts} collections={collections} setCollections={setCollections} orders={orders} setOrders={setOrders} theme={theme} setTheme={setTheme} conversations={conversations} setConversations={setConversations} log={log} emit={emit} onExit={() => setView('storefront')} t={t} lang={lang} />
+      )}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
