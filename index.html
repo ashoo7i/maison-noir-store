@@ -1555,11 +1555,19 @@ function AdminProducts({ products, setProducts, t, lang }) {
       colors: form.colors.split(',').map(c=>c.trim()).filter(Boolean),
       palette: +form.palette, desc: form.desc, descAr: form.descAr || form.desc
     };
-    if (editItem) setProducts(prev => prev.map(p => p.id===editItem.id ? item : p));
-    else setProducts(prev => [item, ...prev]);
+    setProducts(prev => {
+      const next = editItem ? prev.map(p => p.id===editItem.id ? item : p) : [item, ...prev];
+      saveLS(LS_KEYS.products, next);
+      return next;
+    });
     setModal(false);
+    setTimeout(() => { if (window.cloudSyncTrigger) window.cloudSyncTrigger(); }, 50);
   };
-  const del = (id) => setProducts(prev => prev.filter(p => p.id!==id));
+  const del = (id) => setProducts(prev => {
+    const next = prev.filter(p => p.id!==id);
+    saveLS(LS_KEYS.products, next);
+    return next;
+  });
 
   return (
     <div className="space-y-6 text-offwhite">
@@ -2292,8 +2300,14 @@ function App() {
         isRemoteUpdateRef.current = true;
 
         if (Array.isArray(data.products) && data.products.length > 0) {
-          setProducts(data.products);
-          saveLS(LS_KEYS.products, data.products);
+          setProducts(prev => {
+            const next = data.products.map(p => {
+              const local = (prev || []).find(lp => lp.id === p.id);
+              return { ...p, img: p.img || local?.img || '' };
+            });
+            saveLS(LS_KEYS.products, next);
+            return next;
+          });
         }
         if (Array.isArray(data.collections) && data.collections.length > 0) {
           setCollections(data.collections);
@@ -2348,22 +2362,15 @@ function App() {
             applyData(res.data.payload);
           }
         }).catch(() => {});
-      } else {
-        const url = theme?.cloudSyncUrl || 'https://api.myjson.online/v1/records/maison_noir_db';
-        fetch(url)
-          .then(r => r.ok ? r.json() : null)
-          .then(data => applyData(data))
-          .catch(() => {});
       }
     } catch(e) {}
-  }, [theme?.supabaseUrl, theme?.supabaseKey, theme?.cloudSyncUrl]);
+  }, [theme?.supabaseUrl, theme?.supabaseKey]);
 
   // Pull latest data on mount & subscribe to Supabase Realtime changes
   useEffect(() => {
-    pullCloudData();
-    const timer = setInterval(() => {
+    if (theme?.supabaseUrl && theme?.supabaseKey) {
       pullCloudData();
-    }, 3000);
+    }
 
     let channel = null;
     if (theme?.supabaseUrl && theme?.supabaseKey && window.supabase) {
@@ -2378,7 +2385,6 @@ function App() {
     }
 
     return () => {
-      clearInterval(timer);
       if (channel && window.supabase) {
         try { channel.unsubscribe(); } catch(e) {}
       }
