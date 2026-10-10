@@ -300,29 +300,29 @@ const PALETTES = [
 const CATEGORY_AR = { Men:'رجالي', Women:'نسائي', Accessories:'إكسسوارات' };
 
 const SEED_COLLECTIONS = [
-  { id: 'c1', name: 'The Tailoring Edit', nameAr: 'مجموعة التفصيل', tag: 'Men', tagAr: 'رجالي', palette: 0, art: 'coat', img: 'https://i.pinimg.com/736x/3e/de/5b/3ede5b0c66a27f93db812a8a0d4fb14b.jpg' },
-  { id: 'c2', name: 'Evening Archive', nameAr: 'أرشيف السهرات', tag: 'Women', tagAr: 'نسائي', palette: 4, art: 'gown', img: 'https://i.pinimg.com/736x/e4/f0/de/e4f0de8e289f9c6df172010e5b40d521.jpg' },
-  { id: 'c3', name: 'Streetwear & Jackets', nameAr: 'تشكيلة المعاطف والستريت وير', tag: 'Men', tagAr: 'رجالي', palette: 3, art: 'coat', img: 'https://i.pinimg.com/736x/67/99/02/679902875041031216.jpg' },
-  { id: 'c4', name: 'Fine Jewelry & Art', nameAr: 'قطع ومجوهرات فنية', tag: 'Accessories', tagAr: 'إكسسوارات', palette: 1, art: 'cufflinks', img: 'https://i.pinimg.com/736x/f6/9f/bd/f69fbdd74940d2fd5a4b7bad1c1cc32b.jpg' }
+  { id: 'c1', name: 'The Tailoring Edit', nameAr: 'مجموعة التفصيل والبدلات', tag: 'Men', tagAr: 'رجالي', palette: 0, art: 'coat', img: 'https://i.pinimg.com/736x/6e/a3/ef/6ea3efefd69d2bdea36f486be7108259.jpg' },
+  { id: 'c2', name: 'Evening Archive', nameAr: 'أرشيف السهرات الفاخرة', tag: 'Women', tagAr: 'نسائي', palette: 4, art: 'gown', img: 'https://i.pinimg.com/736x/b7/dd/59/b7dd594b7931b250855d1f331d717522.jpg' },
+  { id: 'c3', name: 'Streetwear & Jackets', nameAr: 'تشكيلة المعاطف والستريت وير', tag: 'Men', tagAr: 'رجالي', palette: 3, art: 'coat', img: 'https://i.pinimg.com/1200x/79/1a/22/791a229d5a6d62a7a51ecbb0af7e37fa.jpg' },
+  { id: 'c4', name: 'Fine Jewelry & Art', nameAr: 'قطع ومجوهرات فنية', tag: 'Accessories', tagAr: 'إكسسوارات', palette: 1, art: 'cufflinks', img: 'https://i.pinimg.com/736x/93/ac/2d/93ac2dfc6713f22fc7f7dee32b3b7878.jpg' }
 ];
 
 const SEED_PRODUCTS = [
-  { id:'p1', art:'coat', img:'https://i.pinimg.com/736x/3e/de/5b/3ede5b0c66a27f93db812a8a0d4fb14b.jpg', name:'The Cashmere Overcoat', nameAr:'معطف الكشمير الفاخر', category:'Men', price:1280, stock:6,
+  { id:'p1', art:'coat', img:'https://i.pinimg.com/736x/6e/a3/ef/6ea3efefd69d2bdea36f486be7108259.jpg', name:'The Cashmere Overcoat', nameAr:'معطف الكشمير الفاخر', category:'Men', price:1280, stock:6,
     sizes:['S','M','L','XL'], colors:['Onyx','Umber'], palette:0,
-    desc:'Double-faced cashmere, hand-finished horn buttons, and a silhouette cut for stillness. Inspired by classic Pinterest menswear aesthetics.',
-    descAr:'كشمير فاخر مزدوج الوجه، أزرار قرنية منتهية يدويًا، وقصة أنيقة مستوحاة من أحدث صيحات الموضة من بنترست.' },
-  { id:'p2', art:'gown', img:'https://i.pinimg.com/736x/e4/f0/de/e4f0de8e289f9c6df172010e5b40d521.jpg', name:'Silk Column Gown', nameAr:'فستان الحرير المنسدل', category:'Women', price:2150, stock:3,
+    desc:'Double-faced cashmere, hand-finished horn buttons, and a silhouette cut for stillness.',
+    descAr:'كشمير فاخر مزدوج الوجه، أزرار قرنية منتهية يدويًا، وقصة أنيقة.' },
+  { id:'p2', art:'gown', img:'https://i.pinimg.com/736x/b7/dd/59/b7dd594b7931b250855d1f331d717522.jpg', name:'Silk Column Gown', nameAr:'فستان الحرير المنسدل', category:'Women', price:2150, stock:3,
     sizes:['XS','S','M'], colors:['Pearl','Onyx'], palette:4,
     desc:'A single seam runs the length of this gown, cut on the bias from mulberry silk charmeuse.',
-    descAr:'خيط واحد يمتد على طول الفستان، مقصوص بحرفية من حرير التوت الفاخر ليتحرك كالماء.' },
-  { id:'p3', art:'cufflinks', img:'https://i.pinimg.com/736x/f6/9f/bd/f69fbdd74940d2fd5a4b7bad1c1cc32b.jpg', name:'Brushed Gold Cufflinks', nameAr:'أزرار كم ذهبية مصقولة', category:'Accessories', price:340, stock:14,
-    sizes:['One Size'], colors:['Onyx'], palette:1,
-    desc:'Solid brass, brushed by hand, finished with a 24k gold wash that deepens with wear.',
-    descAr:'نحاس صلب مصقول يدويًا، بطلاء ذهب عيار 24 يزداد جمالًا مع الاستخدام.' },
-  { id:'p4', art:'trouser', img:'https://i.pinimg.com/736x/2c/df/0f/2cdf0f9a2e64627d35967bb3f42b3eb2.jpg', name:'Tailored Wool Trouser', nameAr:'بنطال صوف مفصّل', category:'Men', price:520, stock:9,
-    sizes:['30','32','34','36'], colors:['Slate','Umber'], palette:5,
-    desc:'A fuller break, a higher rise, and a wool so fine it holds a crease for a week.',
-    descAr:'قصة أوسع وخصر أعلى، وصوف فاخر يحافظ على كيّته لأسبوع كامل.' },
+    descAr:'خيط واحد يمتد على طول الفستان، مقصوص بحرفية من حرير التوت الفاخر.' },
+  { id:'p3', art:'coat', img:'https://i.pinimg.com/1200x/79/1a/22/791a229d5a6d62a7a51ecbb0af7e37fa.jpg', name:'Luxury Jacket & Apparel', nameAr:'جاكيت ومعطف مميز', category:'Men', price:1450, stock:8,
+    sizes:['M','L','XL'], colors:['Onyx','Umber'], palette:3,
+    desc:'Hand-finished jacket cut from premium fabrics for timeless style.',
+    descAr:'جاكيت صوف فاخر بتشطيب يدوي مميز لقصة عصرية تدوم طويلاً.' },
+  { id:'p4', art:'cufflinks', img:'https://i.pinimg.com/736x/93/ac/2d/93ac2dfc6713f22fc7f7dee32b3b7878.jpg', name:'Fine Jewelry & Cufflinks', nameAr:'مجموعة المجوهرات والإكسسوارات', category:'Accessories', price:890, stock:12,
+    sizes:['One Size'], colors:['Gold','Silver'], palette:1,
+    desc:'Solid brass and 24k gold wash pieces designed for ultimate sophistication.',
+    descAr:'قطع مجوهرات وأزرار أنيقة مطلية بالذهب عيار 24.' },
   { id:'p5', art:'wrap', img:'https://i.pinimg.com/736x/5a/88/2c/5a882c730248a901844b248a27d2bb91.jpg', name:'Draped Cashmere Wrap', nameAr:'شال كشمير منسدل', category:'Women', price:640, stock:11,
     sizes:['One Size'], colors:['Bone','Clay'], palette:2,
     desc:'Six-ply cashmere, edge-frayed by hand in a small atelier outside Florence.',
@@ -331,14 +331,6 @@ const SEED_PRODUCTS = [
     sizes:['One Size'], colors:['Umber'], palette:3,
     desc:'Vegetable-tanned calfskin over a hand-welted frame, built to last a lifetime.',
     descAr:'جلد عجل مدبوغ نباتيًا فوق هيكل مخيط يدويًا، مصنوع ليدوم مدى الحياة.' },
-  { id:'p7', art:'turtleneck', img:'https://i.pinimg.com/736x/70/4e/d8/704ed8a25cbb463d12d46e330594aefc.jpg', name:'Merino Turtleneck', nameAr:'كنزة مرينو ياقة عالية', category:'Men', price:310, stock:18,
-    sizes:['S','M','L','XL'], colors:['Onyx','Bone'], palette:0,
-    desc:'18.5-micron merino, fully fashioned with no side seams.',
-    descAr:'صوف مرينو فاخر بلا خياطة جانبية، مثالي للطبقات تحت البدلة.' },
-  { id:'p8', art:'skirt', img:'https://i.pinimg.com/736x/8f/3b/1a/8f3b1a8d05284fb1403e9185a210d32e.jpg', name:'Pleated Midi Skirt', nameAr:'تنورة ميدي مطوية', category:'Women', price:410, stock:7,
-    sizes:['XS','S','M','L'], colors:['Pearl','Slate'], palette:4,
-    desc:'Four hundred knife pleats, heat-set into technical wool.',
-    descAr:'أربعمائة طية دقيقة، مثبتة بالحرارة على صوف تقني يحافظ على شكله.' },
 ];
 
 const SEED_THEME = {
@@ -2262,7 +2254,16 @@ function App() {
     });
   });
 
-  const [collections, setCollections] = useState(() => loadLS(LS_KEYS.collections, SEED_COLLECTIONS));
+  const [collections, setCollections] = useState(() => {
+    const loaded = loadLS(LS_KEYS.collections, null);
+    if (!loaded || !Array.isArray(loaded) || loaded.length === 0) {
+      return SEED_COLLECTIONS;
+    }
+    return loaded.map((c, i) => {
+      const seed = SEED_COLLECTIONS[i] || SEED_COLLECTIONS[0];
+      return { ...seed, ...c, img: c.img || seed?.img || '' };
+    });
+  });
   const [orders, setOrders] = useState(() => loadLS(LS_KEYS.orders, []));
   const [conversations, setConversations] = useState(() => loadLS(LS_KEYS.conversations, SEED_CONVERSATIONS));
   const [theme, setTheme] = useState(() => {
