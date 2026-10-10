@@ -484,6 +484,7 @@ function ProductVisual({ product, dark, className='' }) {
         <img 
           src={product.img} 
           alt={product.name} 
+          referrerPolicy="no-referrer"
           onError={() => setImgFailed(true)}
           className="w-full h-full object-cover transition-transform duration-700 hover:scale-105" 
         />
@@ -712,6 +713,7 @@ function Hero({ theme, onExplore, t, dark }) {
           <img 
             src={theme.heroImage} 
             alt="Editorial Background" 
+            referrerPolicy="no-referrer"
             className="w-full h-full object-cover object-top md:object-center opacity-90 transition-opacity duration-700" 
           />
           <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/40 to-ink/60"></div>
@@ -761,7 +763,7 @@ function CollectionsSlider({ collections, t, lang }) {
           <TiltCard key={c.id || i} className="snap-c shrink-0 w-[300px] md:w-[400px] group cursor-pointer">
             <div className="h-[420px] md:h-[480px] rounded-sm overflow-hidden relative">
               {c.img ? (
-                <img src={c.img} alt={c.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                <img src={c.img} alt={c.name} referrerPolicy="no-referrer" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
               ) : (
                 <SwatchBlock palette={c.palette||0} className="w-full h-full transition-transform duration-700 group-hover:scale-105 flex items-center justify-center">
                   <div className="w-2/3 h-2/3 opacity-70"><GarmentArt type={c.art||'coat'} stroke="#FBF8F3" /></div>
